@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>小珍珠的日常</title>
+    
+    <link rel="apple-touch-icon" href="./record.jpg">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -14,7 +19,26 @@
         .cream-card { background-color: #FFFFFF; border: 1px solid #F0E6D2; box-shadow: 0 4px 10px -2px rgba(230, 210, 181, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .input-cream { background-color: #FAF7F0; border: 1px solid #EBE0D0; color: #5D5D5D; }
+        
+        /* 輸入框樣式優化 */
+        .input-cream { 
+            background-color: #FAF7F0; 
+            border: 1px solid #EBE0D0; 
+            color: #5D5D5D; 
+            text-align: center; /* 通用置中 */
+        }
+        
+        /* 針對 iOS Safari 的日期時間置中修正 */
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"] {
+            text-align: center;
+            text-align-last: center; /* 這是 iOS 關鍵 */
+            display: block;
+            margin: 0 auto;
+            min-height: 48px; /* 增加點擊區域 */
+        }
+
         .input-cream:focus { outline: none; border-color: #D4C0A1; background-color: #FFFFFF; }
         .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #D4C0A1; width: 20px; height: 20px; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -53,11 +77,9 @@
     <nav class="flex justify-around items-center px-4 py-3 mt-2 sticky top-0 bg-[#FFFDF5]/95 backdrop-blur-sm z-20 border-b border-stone-100">
         <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id" 
             :class="['flex flex-col items-center space-y-1 transition-all w-16', currentTab === tab.id ? 'text-[#8C7B66] scale-105' : 'text-gray-300 hover:text-gray-400']">
-            
             <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-lg transition-colors', currentTab === tab.id ? 'bg-[#E6D2B5] text-white shadow-md' : 'bg-transparent']">
                 <i :class="['fas', tab.icon]"></i>
             </div>
-            
             <span class="text-[11px] font-medium tracking-wide">{{ tab.name }}</span>
         </button>
     </nav>
@@ -66,7 +88,14 @@
         <div v-if="currentTab === 'excretion'" class="space-y-4 animate-fade-in">
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-poop mr-2"></i>便溺記錄</h2>
-                <div class="mb-5"><label class="block text-xs font-bold text-gray-400 uppercase mb-2">時間</label><input type="datetime-local" v-model="form.excretion.datetime" class="w-full input-cream rounded-xl p-3 text-sm"></div>
+                
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">時間</label>
+                    <div class="bg-[#FAF7F0] border border-[#EBE0D0] rounded-xl p-1">
+                        <input type="datetime-local" v-model="form.excretion.datetime" class="w-full bg-transparent p-2 text-sm font-medium text-center appearance-none">
+                    </div>
+                </div>
+
                 <div class="flex space-x-4 mb-5">
                     <label class="flex-1 cursor-pointer group">
                         <input type="radio" v-model="form.excretion.type" value="poop" class="hidden peer">
@@ -78,7 +107,7 @@
                     </label>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">照片 (自動壓縮)</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片 (自動壓縮)</label>
                     <div class="relative">
                         <input type="file" @change="handleImageCompress" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
                         <div v-if="!form.excretion.imageBase64" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
@@ -99,28 +128,40 @@
                 <div class="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-[#FFF8E1] rounded-full blur-xl opacity-50"></div>
                 <h3 class="text-sm text-[#A68A64] font-bold mb-1">目前狀態：用餐中...</h3>
                 <div class="text-2xl font-bold text-gray-700 mb-1">{{ activeMeal.brand }} <span class="text-base font-normal text-gray-500">({{ foodTypeLabels[activeMeal.type] }})</span></div>
-                <div class="text-sm text-gray-500 mb-4 flex items-center"><i class="far fa-clock mr-1"></i> {{ formatTime(activeMeal.startTime) }} <span class="mx-2">|</span> <i class="fas fa-weight-hanging mr-1"></i> {{ activeMeal.amountGiven }}g</div>
+                <div class="text-sm text-gray-500 mb-4 flex items-center justify-center"><i class="far fa-clock mr-1"></i> {{ formatTime(activeMeal.startTime) }} <span class="mx-2">|</span> <i class="fas fa-weight-hanging mr-1"></i> {{ activeMeal.amountGiven }}g</div>
                 <hr class="border-dashed border-gray-200 my-4">
-                <h4 class="text-sm font-bold text-gray-600 mb-3">我要收碗 (記錄剩餘)</h4>
+                <h4 class="text-sm font-bold text-gray-600 mb-3 text-center">我要收碗 (記錄剩餘)</h4>
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div><label class="block text-[10px] text-gray-400 mb-1">收碗時間</label><input type="time" v-model="form.leftover.time" class="w-full input-cream rounded-lg p-2 text-center text-sm"></div>
-                    <div><label class="block text-[10px] text-gray-400 mb-1">剩餘 (g)</label><input type="number" v-model.number="form.leftover.amount" class="w-full input-cream rounded-lg p-2 text-center text-lg font-bold text-gray-700" placeholder="0"></div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間</label>
+                        <div class="bg-[#FAF7F0] border border-[#EBE0D0] rounded-lg">
+                            <input type="time" v-model="form.leftover.time" class="w-full bg-transparent p-2 text-center text-sm font-medium appearance-none">
+                        </div>
+                    </div>
+                    <div><label class="block text-[10px] text-gray-400 mb-1 text-center">剩餘 (g)</label><input type="number" v-model.number="form.leftover.amount" class="w-full input-cream rounded-lg p-2 text-center text-lg font-bold text-gray-700" placeholder="0"></div>
                 </div>
                 <button @click="submitLeftover" class="w-full py-3 bg-[#8C7B66] text-white rounded-xl shadow-md hover:bg-[#7A6A56] transition">完成用餐</button>
             </div>
 
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-4 text-[#8C7B66] flex items-center justify-between"><span><i class="fas fa-utensils mr-2"></i>我要放飯</span></h2>
-                <div class="mb-4"><label class="block text-xs font-bold text-gray-400 uppercase mb-2">放飯時間</label><input type="datetime-local" v-model="form.food.datetime" class="w-full input-cream rounded-xl p-3 text-sm"></div>
-                <div class="flex space-x-2 mb-4 overflow-x-auto no-scrollbar pb-1">
+                
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">放飯時間</label>
+                    <div class="bg-[#FAF7F0] border border-[#EBE0D0] rounded-xl p-1">
+                        <input type="datetime-local" v-model="form.food.datetime" class="w-full bg-transparent p-2 text-sm font-medium text-center appearance-none">
+                    </div>
+                </div>
+
+                <div class="flex space-x-2 mb-4 overflow-x-auto no-scrollbar pb-1 justify-center">
                     <button v-for="type in ['dry', 'wet', 'snack']" @click="form.food.type = type" :class="['flex-1 px-4 py-2 rounded-lg text-sm border transition-all whitespace-nowrap', form.food.type === type ? 'bg-[#E6D2B5] border-[#E6D2B5] text-white shadow-sm' : 'border-gray-200 text-gray-400 bg-white']">{{ foodTypeLabels[type] }}</button>
                 </div>
                 <div class="grid grid-cols-3 gap-3 mb-4">
                     <div class="col-span-2">
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">品牌</label>
-                        <div class="flex space-x-1"><select v-model="form.food.brand" class="w-full input-cream rounded-lg p-2.5 text-sm appearance-none"><option v-for="opt in getFoodOptions(form.food.type)" :value="opt">{{ opt }}</option></select><button @click="addFoodOption" class="px-2 bg-white border border-gray-200 rounded-lg text-gray-400">+</button></div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">品牌</label>
+                        <div class="flex space-x-1"><select v-model="form.food.brand" class="w-full input-cream rounded-lg p-2.5 text-sm appearance-none text-center"><option v-for="opt in getFoodOptions(form.food.type)" :value="opt">{{ opt }}</option></select><button @click="addFoodOption" class="px-2 bg-white border border-gray-200 rounded-lg text-gray-400">+</button></div>
                     </div>
-                    <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">給予 (g)</label><input type="number" v-model.number="form.food.amountGiven" class="w-full input-cream rounded-lg p-2.5 text-center font-bold"></div>
+                    <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">給予 (g)</label><input type="number" v-model.number="form.food.amountGiven" class="w-full input-cream rounded-lg p-2.5 text-center font-bold"></div>
                 </div>
                 <div v-if="form.food.type !== 'snack'" class="mb-6 bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
                     <div class="flex justify-between items-center mb-2"><label class="text-xs font-bold text-gray-500">添加保健品</label><button @click="addSupplementOption" class="text-[10px] text-[#A68A64] border border-[#A68A64] px-1.5 rounded">+ 新增</button></div>
@@ -137,8 +178,15 @@
         <div v-if="currentTab === 'meds'" class="space-y-4 animate-fade-in">
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-notes-medical mr-2"></i>驅蟲記錄</h2>
-                <div class="mb-5"><label class="block text-xs font-bold text-gray-400 uppercase mb-2">日期</label><input type="date" v-model="form.meds.date" class="w-full input-cream rounded-xl p-3 text-sm"></div>
-                <div class="mb-6"><label class="block text-xs font-bold text-gray-400 uppercase mb-2">藥品品牌</label><input type="text" v-model="form.meds.brand" placeholder="例如：全能貓" class="w-full input-cream rounded-xl p-3 text-sm"></div>
+                
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">日期</label>
+                    <div class="bg-[#FAF7F0] border border-[#EBE0D0] rounded-xl p-1">
+                        <input type="date" v-model="form.meds.date" class="w-full bg-transparent p-2 text-sm font-medium text-center appearance-none">
+                    </div>
+                </div>
+
+                <div class="mb-6"><label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">藥品品牌</label><input type="text" v-model="form.meds.brand" placeholder="例如：全能貓" class="w-full input-cream rounded-xl p-3 text-sm text-center"></div>
                 <button @click="submitMeds" class="w-full py-3.5 bg-[#5D5D5D] text-white rounded-xl shadow-lg hover:bg-[#4A4A4A] transition font-medium">儲存記錄</button>
             </div>
         </div>
@@ -153,13 +201,13 @@
                 </div>
                 <div class="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-2">
                     <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
-                    <input type="date" v-model="filterDate" class="w-full text-sm text-gray-600 focus:outline-none bg-transparent" placeholder="選擇日期">
+                    <input type="date" v-model="filterDate" class="w-full text-sm text-gray-600 focus:outline-none bg-transparent text-center appearance-none" placeholder="選擇日期">
                     <button v-if="filterDate" @click="filterDate = ''" class="ml-2 text-gray-400"><i class="fas fa-times-circle"></i></button>
                 </div>
             </div>
 
             <div v-if="filteredRecords.length === 0 && !isLoading" class="text-center py-12 opacity-50">
-                <img src="./avatar.jpg" class="w-16 h-16 rounded-full mx-auto mb-3 opacity-50 grayscale object-cover empty-avatar-img">
+                <img src="./record.jpg" class="w-16 h-16 rounded-full mx-auto mb-3 opacity-50 grayscale object-cover empty-avatar-img">
                 <p class="text-gray-400">尚無符合的記錄</p>
             </div>
 
@@ -223,7 +271,6 @@
             return {
                 isLoading: true,
                 currentTab: 'excretion',
-                // 改回文字按鍵設定 (icon)
                 tabs: [ 
                     { id: 'excretion', name: '便溺', icon: 'fa-poop' }, 
                     { id: 'food', name: '用餐', icon: 'fa-utensils' }, 
@@ -270,15 +317,8 @@
         },
         methods: {
             getFoodOptions(type) { return type === 'dry' ? this.settings.dryOptions : (type === 'wet' ? this.settings.wetOptions : []); },
-            
-            // 日期格式修正：包含年份
-            formatDate(isoString) { 
-                if(!isoString) return ''; 
-                const d = new Date(isoString); 
-                return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; 
-            },
+            formatDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; },
             formatTime(isoString) { if(!isoString) return '--:--'; const d = new Date(isoString); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; },
-            
             async updateSettings() { await setDoc(doc(db, "config", "general"), this.settings); },
             addFoodOption() { const newOpt = prompt("請輸入新品牌名稱："); if (newOpt) { if (this.form.food.type === 'dry') this.settings.dryOptions.push(newOpt); else if (this.form.food.type === 'wet') this.settings.wetOptions.push(newOpt); this.form.food.brand = newOpt; this.updateSettings(); } },
             addSupplementOption() { const newSupp = prompt("請輸入新保健品名稱："); if (newSupp) { this.settings.supplements.push(newSupp); this.updateSettings(); } },
