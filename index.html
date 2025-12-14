@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>小珍珠的日常</title>
     
-    <link rel="apple-touch-icon" href="./record.JPG">
-    <link rel="icon" href="./record.JPG">
+    <link rel="apple-touch-icon" href="./icon.png">
+    <link rel="icon" href="./icon.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -20,15 +20,18 @@
         .cream-card { background-color: #FFFFFF; border: 1px solid #F0E6D2; box-shadow: 0 4px 10px -2px rgba(230, 210, 181, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
         .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #D4C0A1; width: 20px; height: 20px; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
 
         /* 視覺設定 */
         .banner-img { object-position: center 40%; }
+        /* 調整圖片對焦點 */
         .avatar-img { object-position: 0% 25%; }
         .empty-avatar-img { object-position: 0% 25%; }
-
-        /* --- 日期時間框 iOS 專用修正 --- */
+        
+        /* iOS 輸入框優化 */
         .input-wrapper {
             display: flex;
             align-items: center;
@@ -57,22 +60,100 @@
             font-weight: 500;
             color: #5D5D5D;
         }
+
+        /* Modal 動畫 */
+        .modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
+        .modal-enter-from, .modal-leave-to { opacity: 0; }
+        .modal-enter-active .modal-content, .modal-leave-active .modal-content { transition: transform 0.3s ease; }
+        .modal-enter-from .modal-content, .modal-leave-to .modal-content { transform: translateY(20px) scale(0.95); }
     </style>
 </head>
 <body class="min-h-screen pb-24">
 
 <div id="app">
-    <div v-if="isLoading" class="fixed inset-0 bg-white/80 z-50 flex items-center justify-center flex-col">
-        <div class="loader w-10 h-10 border-4 mb-2"></div><p class="text-xs text-gray-500">雲端同步中...</p>
+    <div v-if="isLoading" class="fixed inset-0 bg-[#FFFDF5] z-50 flex items-center justify-center flex-col transition-opacity duration-300">
+        <img src="./record.JPG" class="w-24 h-24 mb-4 rounded-full shadow-sm animate-[bounce_1s_infinite] object-cover avatar-img">
+        <div class="loader mb-2"></div>
+        <p class="text-xs text-[#8C7B66] font-medium tracking-widest">資料同步中...</p>
     </div>
+
+    <transition name="modal">
+        <div v-if="isEditModalOpen" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-4" @click.self="isEditModalOpen = false">
+            <div class="modal-content bg-white w-full max-w-md rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar relative">
+                <button @click="isEditModalOpen = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                <h3 class="text-lg font-bold text-[#8C7B66] mb-4 flex items-center"><i class="fas fa-edit mr-2"></i>修改紀錄</h3>
+
+                <div class="space-y-4">
+                    <div v-if="editForm.category === 'excretion'">
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">時間</label>
+                            <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.datetime" class="ios-input-fix"></div>
+                        </div>
+                        <div class="flex space-x-4 mb-4">
+                            <label class="flex-1 cursor-pointer group">
+                                <input type="radio" v-model="editForm.data.type" value="poop" class="hidden peer">
+                                <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition"><div class="text-xl">💩</div><div class="text-xs">便便</div></div>
+                            </label>
+                            <label class="flex-1 cursor-pointer group">
+                                <input type="radio" v-model="editForm.data.type" value="pee" class="hidden peer">
+                                <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition"><div class="text-xl">💧</div><div class="text-xs">尿尿</div></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div v-if="editForm.category === 'food'">
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">放飯時間</label>
+                            <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.startTime" class="ios-input-fix"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">種類</label>
+                                <div class="input-wrapper"><select v-model="editForm.data.type" class="ios-input-fix"><option value="dry">乾糧</option><option value="wet">濕糧</option><option value="snack">點心</option></select></div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">給予 (g)</label>
+                                <div class="input-wrapper"><input type="number" v-model.number="editForm.data.amountGiven" class="ios-input-fix"></div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">品牌</label>
+                             <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
+                        </div>
+                        <div class="mb-4" v-if="editForm.data.status === 'finished'">
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">剩餘 (g)</label>
+                             <div class="input-wrapper"><input type="number" v-model.number="editForm.data.amountLeft" class="ios-input-fix"></div>
+                        </div>
+                        <div v-if="editForm.data.status === 'finished'" class="mb-2">
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">完食時間</label>
+                             <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.endTime" class="ios-input-fix"></div>
+                        </div>
+                    </div>
+
+                    <div v-if="editForm.category === 'meds'">
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">日期</label>
+                            <div class="input-wrapper"><input type="date" v-model="editForm.data.date" class="ios-input-fix"></div>
+                        </div>
+                        <div class="mb-4">
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">品牌</label>
+                             <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
+                        </div>
+                    </div>
+
+                    <button @click="submitEdit" class="w-full py-3 bg-[#8C7B66] text-white rounded-xl shadow-md hover:bg-[#7A6A56] transition font-bold">確認修改</button>
+                </div>
+            </div>
+        </div>
+    </transition>
 
     <header class="relative bg-white shadow-sm pb-4 rounded-b-[2rem] overflow-hidden z-10">
         <div class="h-52 w-full overflow-hidden relative bg-[#E6D2B5]">
-            <img src="./banner.jpg" alt="小珍珠睡覺" class="w-full h-full object-cover banner-img opacity-95">
+            <img src="./banner.jpg" onerror="this.style.display='none'" alt="小珍珠睡覺" class="w-full h-full object-cover banner-img opacity-95">
             <div class="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent"></div>
         </div>
         <div class="pl-12 pr-6 -mt-16 flex items-end space-x-4 relative">
-            <div class="w-28 h-28 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-100">
+            <div class="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-[#FFFDF5]">
                 <img src="./avatar.jpg" alt="小珍珠" class="w-full h-full object-cover avatar-img">
             </div>
             <div class="mb-2">
@@ -230,13 +311,13 @@
                 </div>
                 <div class="input-wrapper h-10">
                     <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
-                    <input type="date" v-model="filterDate" class="ios-input-fix text-left w-auto" style="padding-top:4px">
+                    <input type="date" v-model="filterDate" class="ios-input-fix w-full" style="padding-top:4px; text-align: left;">
                     <button v-if="filterDate" @click="filterDate = ''" class="ml-2 text-gray-400 px-2"><i class="fas fa-times-circle"></i></button>
                 </div>
             </div>
 
             <div v-if="filteredRecords.length === 0 && !isLoading" class="text-center py-12 opacity-50">
-                <img src="./record.JPG" class="w-16 h-16 rounded-full mx-auto mb-3 opacity-50 grayscale object-cover empty-avatar-img">
+                <img src="./record.JPG" class="w-20 h-20 rounded-full mx-auto mb-3 opacity-50 grayscale object-cover empty-avatar-img">
                 <p class="text-gray-400">尚無符合的記錄</p>
             </div>
 
@@ -249,8 +330,12 @@
                 <div class="flex-1">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-[10px] font-bold text-gray-400 tracking-wider bg-gray-50 px-2 py-0.5 rounded">{{ formatDate(record.timestamp) }}</span>
-                        <button @click="deleteRecord(record.id)" class="text-gray-200 hover:text-red-400 px-2"><i class="fas fa-times"></i></button>
+                        <div class="flex space-x-2">
+                             <button @click.stop="openEditModal(record)" class="text-gray-300 hover:text-[#8C7B66] px-1 transition"><i class="fas fa-pencil-alt"></i></button>
+                             <button @click.stop="deleteRecord(record.id)" class="text-gray-200 hover:text-red-400 px-1"><i class="fas fa-times"></i></button>
+                        </div>
                     </div>
+                    
                     <div v-if="record.category === 'excretion'">
                         <p class="font-bold text-gray-700 text-sm">{{ record.data.type === 'poop' ? '排便' : '排尿' }}</p>
                         <div v-if="record.data.imageBase64" class="mt-2 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-100"><img :src="record.data.imageBase64" class="w-full h-full object-cover"></div>
@@ -312,6 +397,10 @@
                 filterDate: '',
                 filterCategory: 'all',
                 
+                // 新增：編輯模式的狀態
+                isEditModalOpen: false,
+                editForm: { id: null, category: '', data: {} },
+                
                 form: {
                     excretion: { type: 'poop', datetime: getCurrentDateTime(), imageBase64: null },
                     food: { type: 'dry', brand: '皇家 K36', amountGiven: '', supplements: [], datetime: getCurrentDateTime() },
@@ -371,6 +460,41 @@
                         this.form.excretion.imageBase64 = canvas.toDataURL('image/jpeg', 0.5);
                     }
                     img.onerror = () => { alert("無法讀取圖片"); }
+                }
+            },
+
+            // --- 新增：開啟編輯視窗 ---
+            openEditModal(record) {
+                // 深拷貝資料，避免直接修改到畫面顯示
+                this.editForm = JSON.parse(JSON.stringify(record));
+                this.isEditModalOpen = true;
+            },
+
+            // --- 新增：提交編輯修改 (同步 Firebase) ---
+            async submitEdit() {
+                try {
+                    this.isLoading = true;
+                    // 根據不同的資料類型，整理要更新的欄位
+                    // 特別注意：如果是用餐紀錄，要確保 timestamp 跟 startTime 保持一致
+                    if (this.editForm.category === 'food') {
+                         this.editForm.timestamp = this.editForm.data.startTime; 
+                    } else if (this.editForm.category === 'excretion') {
+                         this.editForm.timestamp = this.editForm.data.datetime;
+                    } else if (this.editForm.category === 'meds') {
+                         // 驅蟲的 timestamp 保持不變，或也可以設為 date
+                    }
+
+                    await updateDoc(doc(db, "records", this.editForm.id), {
+                        timestamp: this.editForm.timestamp,
+                        data: this.editForm.data
+                    });
+                    
+                    this.isEditModalOpen = false;
+                    // alert("修改成功！"); // 手機上可以不跳 alert 比較順暢
+                } catch (e) {
+                    alert("修改失敗：" + e.message);
+                } finally {
+                    this.isLoading = false;
                 }
             },
 
