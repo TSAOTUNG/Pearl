@@ -310,7 +310,6 @@
                     <button @click="filterCategory = 'meds'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'meds' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">驅蟲</button>
                 </div>
                 <div class="input-wrapper h-10">
-                    <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
                     <input type="date" v-model="filterDate" class="ios-input-fix w-full" style="padding-top:4px; text-align: left;">
                     <button v-if="filterDate" @click="filterDate = ''" class="ml-2 text-gray-400 px-2"><i class="fas fa-times-circle"></i></button>
                 </div>
