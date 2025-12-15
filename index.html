@@ -391,12 +391,17 @@
                     { id: 'history', name: '記錄', icon: 'fa-history' } 
                 ],
                 foodTypeLabels: { dry: '乾糧', wet: '濕糧', snack: '點心' },
-                settings: { dryOptions: ['皇家 K36'], wetOptions: ['皇家 K36'], supplements: ['離胺酸', '牛磺酸', '排毛粉'] },
+                
+                // 設定值，包含點心選項
+                settings: { 
+                    dryOptions: ['皇家 K36'], 
+                    wetOptions: ['皇家 K36'], 
+                    snackOptions: ['REGAL'], 
+                    supplements: ['離胺酸', '牛磺酸', '排毛粉'] 
+                },
                 
                 filterDate: '',
                 filterCategory: 'all',
-                
-                // 新增：編輯模式的狀態
                 isEditModalOpen: false,
                 editForm: { id: null, category: '', data: {} },
                 
@@ -429,15 +434,44 @@
         async created() {
             const q = query(collection(db, "records"), orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => { this.records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); this.isLoading = false; });
+            
             const settingsDoc = await getDoc(doc(db, "config", "general"));
-            if (settingsDoc.exists()) { this.settings = settingsDoc.data(); } else { await setDoc(doc(db, "config", "general"), this.settings); }
+            if (settingsDoc.exists()) { 
+                const data = settingsDoc.data();
+                // 讀取設定，若資料庫舊資料無 snackOptions 則給預設值
+                this.settings.dryOptions = data.dryOptions || [];
+                this.settings.wetOptions = data.wetOptions || [];
+                this.settings.snackOptions = data.snackOptions || []; 
+                this.settings.supplements = data.supplements || [];
+            } else { 
+                await setDoc(doc(db, "config", "general"), this.settings); 
+            }
         },
         methods: {
-            getFoodOptions(type) { return type === 'dry' ? this.settings.dryOptions : (type === 'wet' ? this.settings.wetOptions : []); },
+            // 根據類型回傳對應的品牌選項
+            getFoodOptions(type) { 
+                if (type === 'dry') return this.settings.dryOptions;
+                if (type === 'wet') return this.settings.wetOptions;
+                if (type === 'snack') return this.settings.snackOptions;
+                return [];
+            },
             formatDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; },
             formatTime(isoString) { if(!isoString) return '--:--'; const d = new Date(isoString); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; },
             async updateSettings() { await setDoc(doc(db, "config", "general"), this.settings); },
-            addFoodOption() { const newOpt = prompt("請輸入新品牌名稱："); if (newOpt) { if (this.form.food.type === 'dry') this.settings.dryOptions.push(newOpt); else if (this.form.food.type === 'wet') this.settings.wetOptions.push(newOpt); this.form.food.brand = newOpt; this.updateSettings(); } },
+            
+            // 新增品牌功能 (含點心)
+            addFoodOption() { 
+                const newOpt = prompt("請輸入新品牌名稱："); 
+                if (newOpt) { 
+                    if (this.form.food.type === 'dry') this.settings.dryOptions.push(newOpt); 
+                    else if (this.form.food.type === 'wet') this.settings.wetOptions.push(newOpt); 
+                    else if (this.form.food.type === 'snack') this.settings.snackOptions.push(newOpt);
+                    
+                    this.form.food.brand = newOpt; 
+                    this.updateSettings(); 
+                } 
+            },
+            
             addSupplementOption() { const newSupp = prompt("請輸入新保健品名稱："); if (newSupp) { this.settings.supplements.push(newSupp); this.updateSettings(); } },
 
             handleImageCompress(event) {
@@ -462,34 +496,24 @@
                 }
             },
 
-            // --- 新增：開啟編輯視窗 ---
             openEditModal(record) {
-                // 深拷貝資料，避免直接修改到畫面顯示
                 this.editForm = JSON.parse(JSON.stringify(record));
                 this.isEditModalOpen = true;
             },
 
-            // --- 新增：提交編輯修改 (同步 Firebase) ---
             async submitEdit() {
                 try {
                     this.isLoading = true;
-                    // 根據不同的資料類型，整理要更新的欄位
-                    // 特別注意：如果是用餐紀錄，要確保 timestamp 跟 startTime 保持一致
                     if (this.editForm.category === 'food') {
                          this.editForm.timestamp = this.editForm.data.startTime; 
                     } else if (this.editForm.category === 'excretion') {
                          this.editForm.timestamp = this.editForm.data.datetime;
-                    } else if (this.editForm.category === 'meds') {
-                         // 驅蟲的 timestamp 保持不變，或也可以設為 date
                     }
-
                     await updateDoc(doc(db, "records", this.editForm.id), {
                         timestamp: this.editForm.timestamp,
                         data: this.editForm.data
                     });
-                    
                     this.isEditModalOpen = false;
-                    // alert("修改成功！"); // 手機上可以不跳 alert 比較順暢
                 } catch (e) {
                     alert("修改失敗：" + e.message);
                 } finally {
