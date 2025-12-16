@@ -344,7 +344,9 @@
                         <div class="mt-2 text-sm text-gray-600 bg-[#FAF7F0] p-2 rounded-lg text-xs leading-relaxed">
                             <div class="text-[10px] text-gray-400 mb-1 border-b border-gray-200 pb-1 flex justify-between"><span><i class="far fa-clock"></i> {{ formatTime(record.data.startTime) }} 放飯</span><span v-if="record.data.endTime"> ➔ {{ formatTime(record.data.endTime) }} 收碗</span></div>
                             <div class="flex justify-between mt-1"><span>給予：{{ record.data.amountGiven }}g</span><span v-if="record.data.endTime">剩餘：{{ record.data.amountLeft }}g</span><span v-else class="text-gray-400 italic">尚未收碗</span></div>
-                            <div v-if="record.data.endTime" class="mt-1 pt-1 border-t border-gray-200 font-bold text-[#A68A64]">共吃下：{{ record.data.amountGiven - record.data.amountLeft }}g</div>
+                            
+                            <div v-if="record.data.endTime" class="mt-1 pt-1 border-t border-gray-200 font-bold text-[#A68A64]">共吃下：{{ (record.data.amountGiven - record.data.amountLeft).toFixed(1) }}g</div>
+                        
                         </div>
                         <div v-if="record.data.supplements?.length > 0" class="flex gap-1 mt-2 flex-wrap"><span v-for="s in record.data.supplements" class="text-[10px] border border-gray-200 text-gray-400 px-2 py-0.5 rounded-full">{{ s }}</span></div>
                         <div v-if="record.data.status === 'eating'" class="mt-2"><button @click="quickFinish(record.id)" class="text-xs w-full py-1 bg-[#E6D2B5] text-white rounded">補按收碗 (設為剩 0g)</button></div>
@@ -361,6 +363,7 @@
 <script type="module">
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // 引入 Auth
     import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -375,6 +378,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app); // 初始化 Auth
 
     const getCurrentDateTime = () => { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); return now.toISOString().slice(0, 16); };
     const getCurrentTime = () => { const now = new Date(); return String(now.getHours()).padStart(2,'0') + ":" + String(now.getMinutes()).padStart(2,'0'); };
@@ -432,20 +436,35 @@
             }
         },
         async created() {
-            const q = query(collection(db, "records"), orderBy("timestamp", "desc"));
-            onSnapshot(q, (snapshot) => { this.records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); this.isLoading = false; });
-            
-            const settingsDoc = await getDoc(doc(db, "config", "general"));
-            if (settingsDoc.exists()) { 
-                const data = settingsDoc.data();
-                // 讀取設定，若資料庫舊資料無 snackOptions 則給預設值
-                this.settings.dryOptions = data.dryOptions || [];
-                this.settings.wetOptions = data.wetOptions || [];
-                this.settings.snackOptions = data.snackOptions || []; 
-                this.settings.supplements = data.supplements || [];
-            } else { 
-                await setDoc(doc(db, "config", "general"), this.settings); 
-            }
+            // 加入匿名登入流程
+            signInAnonymously(auth)
+                .then(() => {
+                    console.log("登入成功，開始讀取資料");
+                    // 登入成功後才開始監聽資料庫
+                    const q = query(collection(db, "records"), orderBy("timestamp", "desc"));
+                    onSnapshot(q, (snapshot) => { 
+                        this.records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
+                        this.isLoading = false; 
+                    });
+                    
+                    // 讀取設定
+                    getDoc(doc(db, "config", "general")).then(settingsDoc => {
+                         if (settingsDoc.exists()) { 
+                            const data = settingsDoc.data();
+                            this.settings.dryOptions = data.dryOptions || [];
+                            this.settings.wetOptions = data.wetOptions || [];
+                            this.settings.snackOptions = data.snackOptions || []; 
+                            this.settings.supplements = data.supplements || [];
+                        } else { 
+                            setDoc(doc(db, "config", "general"), this.settings); 
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error("登入失敗", error);
+                    alert("連線失敗，請檢查網路設定");
+                    this.isLoading = false;
+                });
         },
         methods: {
             // 根據類型回傳對應的品牌選項
