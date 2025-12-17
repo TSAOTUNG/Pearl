@@ -661,9 +661,9 @@
                 return [];
             },
             getHealthPlaceholder() {
-                if (this.form.health.subType === 'vaccine') return '例如：三合一、狂犬病';
-                if (this.form.health.subType === 'bath') return '例如：美容洗澡、在家洗';
-                return '例如：全能貓、寵愛';
+                if (this.form.health.subType === 'vaccine') return '';
+                if (this.form.health.subType === 'bath') return '';
+                return '';
             },
             getRecordIcon(record) {
                 if (record.category === 'excretion') return record.data.type === 'poop' ? 'fa-poop' : 'fa-tint';
