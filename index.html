@@ -23,11 +23,9 @@
         
         .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #D4C0A1; width: 20px; height: 20px; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
-
+        
         /* 視覺設定 */
         .banner-img { object-position: center 40%; }
-        /* 調整圖片對焦點 */
         .avatar-img { object-position: 0% 25%; }
         .empty-avatar-img { object-position: 0% 25%; }
         
@@ -66,6 +64,11 @@
         .modal-enter-from, .modal-leave-to { opacity: 0; }
         .modal-enter-active .modal-content, .modal-leave-active .modal-content { transition: transform 0.3s ease; }
         .modal-enter-from .modal-content, .modal-leave-to .modal-content { transform: translateY(20px) scale(0.95); }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #FFFDF5 100%);
+            border: 1px solid #F0E6D2;
+        }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -130,13 +133,27 @@
                         </div>
                     </div>
 
-                    <div v-if="editForm.category === 'meds'">
+                    <div v-if="editForm.category === 'meds' || editForm.category === 'health'">
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">日期</label>
                             <div class="input-wrapper"><input type="date" v-model="editForm.data.date" class="ios-input-fix"></div>
                         </div>
+                        <div class="flex space-x-2 mb-4">
+                            <label class="flex-1 cursor-pointer group">
+                                <input type="radio" v-model="editForm.data.subType" value="deworming" class="hidden peer">
+                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">驅蟲</div>
+                            </label>
+                            <label class="flex-1 cursor-pointer group">
+                                <input type="radio" v-model="editForm.data.subType" value="vaccine" class="hidden peer">
+                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">疫苗</div>
+                            </label>
+                            <label class="flex-1 cursor-pointer group">
+                                <input type="radio" v-model="editForm.data.subType" value="bath" class="hidden peer">
+                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">洗澡</div>
+                            </label>
+                        </div>
                         <div class="mb-4">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">品牌</label>
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註 / 品牌</label>
                              <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
                         </div>
                     </div>
@@ -177,6 +194,68 @@
 
     <main class="px-5 mt-4 transition-all duration-300">
         
+        <div v-if="currentTab === 'dashboard'" class="space-y-4 animate-fade-in">
+            <div class="flex justify-between items-center mb-1 px-1">
+                <h2 class="text-lg font-bold text-[#8C7B66]">今日概況</h2>
+                <span class="text-xs text-gray-400 bg-white px-2 py-1 rounded-full border border-gray-100">{{ getCurrentDateDisplay() }}</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="stat-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm">
+                    <div class="mb-2">
+                        <i class="fas fa-poop text-3xl text-[#C0A062]"></i>
+                    </div>
+                    <div class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">便便次數</div>
+                    <div class="text-2xl font-bold text-gray-700">{{ todayStats.poopCount }} <span class="text-xs font-normal text-gray-400">次</span></div>
+                </div>
+                
+                <div class="stat-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm">
+                    <div class="mb-2">
+                        <i class="fas fa-tint text-3xl text-[#C0A062]"></i>
+                    </div>
+                    <div class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">尿尿次數</div>
+                    <div class="text-2xl font-bold text-gray-700">{{ todayStats.peeCount }} <span class="text-xs font-normal text-gray-400">次</span></div>
+                </div>
+                
+                <div class="stat-card p-4 rounded-2xl col-span-2 shadow-sm">
+                    <div class="flex items-center justify-between mb-3 px-1">
+                        <div>
+                            <div class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-0.5">今日進食總量</div>
+                            <div class="text-3xl font-bold text-[#8C7B66]">{{ todayStats.foodDetails.total.toFixed(1) }} <span class="text-sm font-normal text-gray-400">g</span></div>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-[#E6D2B5]/20 text-[#8C7B66] flex items-center justify-center text-lg">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="h-px bg-gray-100 w-full mb-3"></div> <div class="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                            <div class="text-[10px] text-gray-400 mb-1">乾糧</div>
+                            <div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.dry.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div>
+                        </div>
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400 mb-1">濕糧</div>
+                            <div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.wet.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div>
+                        </div>
+                        <div class="border-l border-gray-100">
+                            <div class="text-[10px] text-gray-400 mb-1">點心</div>
+                            <div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.snack.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="activeMeal" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center space-x-3 animate-pulse">
+                <i class="fas fa-exclamation-circle text-yellow-500"></i>
+                <div class="flex-1">
+                    <p class="text-sm font-bold text-yellow-800">正在用餐中</p>
+                    <p class="text-xs text-yellow-600">記得去「用餐」分頁收碗喔！</p>
+                </div>
+                <button @click="currentTab='food'" class="px-3 py-1 bg-yellow-400 text-white text-xs rounded-full font-bold">前往</button>
+            </div>
+            
+        </div>
+
         <div v-if="currentTab === 'excretion'" class="space-y-4 animate-fade-in">
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-poop mr-2"></i>便溺記錄</h2>
@@ -191,11 +270,21 @@
                 <div class="flex space-x-4 mb-5">
                     <label class="flex-1 cursor-pointer group">
                         <input type="radio" v-model="form.excretion.type" value="poop" class="hidden peer">
-                        <div class="py-4 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all"><div class="text-2xl mb-1">💩</div><div class="text-sm">便便</div></div>
+                        <div class="py-4 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all">
+                            <div class="mb-2">
+                                <i class="fas fa-poop text-3xl" :class="form.excretion.type === 'poop' ? 'text-white' : 'text-[#C0A062]'"></i>
+                            </div>
+                            <div class="text-sm">便便</div>
+                        </div>
                     </label>
                     <label class="flex-1 cursor-pointer group">
                         <input type="radio" v-model="form.excretion.type" value="pee" class="hidden peer">
-                        <div class="py-4 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all"><div class="text-2xl mb-1">💧</div><div class="text-sm">尿尿</div></div>
+                        <div class="py-4 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all">
+                            <div class="mb-2">
+                                <i class="fas fa-tint text-3xl" :class="form.excretion.type === 'pee' ? 'text-white' : 'text-[#C0A062]'"></i>
+                            </div>
+                            <div class="text-sm">尿尿</div>
+                        </div>
                     </label>
                 </div>
                 <div class="mb-6">
@@ -280,24 +369,48 @@
             </div>
         </div>
 
-        <div v-if="currentTab === 'meds'" class="space-y-4 animate-fade-in">
+        <div v-if="currentTab === 'health'" class="space-y-4 animate-fade-in">
             <div class="cream-card p-6 rounded-2xl">
-                <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-notes-medical mr-2"></i>驅蟲記錄</h2>
+                <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-heartbeat mr-2"></i>健康護理</h2>
                 
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">日期</label>
                     <div class="input-wrapper">
-                        <input type="date" v-model="form.meds.date" class="ios-input-fix">
+                        <input type="date" v-model="form.health.date" class="ios-input-fix">
                     </div>
                 </div>
 
+                <div class="grid grid-cols-3 gap-3 mb-5">
+                    <label class="cursor-pointer group">
+                        <input type="radio" v-model="form.health.subType" value="deworming" class="hidden peer">
+                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-capsules mb-1 text-lg"></i>
+                            <div class="text-xs">驅蟲</div>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input type="radio" v-model="form.health.subType" value="vaccine" class="hidden peer">
+                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-syringe mb-1 text-lg"></i>
+                            <div class="text-xs">疫苗</div>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input type="radio" v-model="form.health.subType" value="bath" class="hidden peer">
+                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-bath mb-1 text-lg"></i>
+                            <div class="text-xs">洗澡</div>
+                        </div>
+                    </label>
+                </div>
+
                 <div class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">藥品品牌</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註 / 藥品品牌</label>
                     <div class="input-wrapper">
-                        <input type="text" v-model="form.meds.brand" placeholder="例如：全能貓" class="ios-input-fix" style="padding-top:0">
+                        <input type="text" v-model="form.health.brand" :placeholder="getHealthPlaceholder()" class="ios-input-fix" style="padding-top:0">
                     </div>
                 </div>
-                <button @click="submitMeds" class="w-full py-3.5 bg-[#5D5D5D] text-white rounded-xl shadow-lg hover:bg-[#4A4A4A] transition font-medium">儲存記錄</button>
+                <button @click="submitHealth" class="w-full py-3.5 bg-[#5D5D5D] text-white rounded-xl shadow-lg hover:bg-[#4A4A4A] transition font-medium">儲存記錄</button>
             </div>
         </div>
 
@@ -306,7 +419,7 @@
             <div class="mt-2 mb-2">
                 <button @click="backupData" class="w-full py-2 bg-white border border-stone-200 text-stone-400 rounded-xl shadow-sm text-xs flex items-center justify-center space-x-2 active:scale-95 transition hover:bg-stone-50">
                     <i class="fas fa-download"></i>
-                    <span>Download</span>
+                    <span>Download Backup</span>
                 </button>
             </div>
             <div class="sticky top-[76px] z-30 bg-[#FFFDF5]/95 backdrop-blur-sm pt-2 pb-4 -mx-5 px-5 border-b border-stone-100">
@@ -314,7 +427,7 @@
                     <button @click="filterCategory = 'all'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white border-gray-200 text-gray-500']">全部</button>
                     <button @click="filterCategory = 'excretion'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'excretion' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">便溺</button>
                     <button @click="filterCategory = 'food'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'food' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">用餐</button>
-                    <button @click="filterCategory = 'meds'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'meds' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">驅蟲</button>
+                    <button @click="filterCategory = 'health'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'health' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">健康</button>
                 </div>
                 <div class="input-wrapper h-10">
                     <input type="date" v-model="filterDate" class="ios-input-fix w-full" style="padding-top:4px; text-align: left;">
@@ -328,11 +441,15 @@
             </div>
 
             <div v-for="record in filteredRecords" :key="record.id" class="cream-card p-4 rounded-xl flex items-start space-x-3 relative transition-transform active:scale-[0.99]">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-1" :class="{'bg-yellow-50 text-yellow-600': record.category === 'excretion', 'bg-orange-50 text-orange-600': record.category === 'food', 'bg-blue-50 text-blue-600': record.category === 'meds'}">
-                    <i v-if="record.category === 'excretion'" class="fas" :class="record.data.type === 'poop' ? 'fa-poop' : 'fa-tint'"></i>
-                    <i v-if="record.category === 'food'" class="fas fa-utensils"></i>
-                    <i v-if="record.category === 'meds'" class="fas fa-notes-medical"></i>
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-1" 
+                     :class="{
+                        'bg-yellow-50 text-yellow-600': record.category === 'excretion', 
+                        'bg-orange-50 text-orange-600': record.category === 'food', 
+                        'bg-blue-50 text-blue-600': record.category === 'meds' || record.category === 'health'
+                     }">
+                    <i class="fas" :class="getRecordIcon(record)"></i>
                 </div>
+
                 <div class="flex-1">
                     <div class="flex justify-between items-start mb-1">
                         <span class="text-[10px] font-bold text-gray-400 tracking-wider bg-gray-50 px-2 py-0.5 rounded">{{ formatDate(record.timestamp) }}</span>
@@ -346,6 +463,7 @@
                         <p class="font-bold text-gray-700 text-sm">{{ record.data.type === 'poop' ? '排便' : '排尿' }}</p>
                         <div v-if="record.data.imageBase64" class="mt-2 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-100"><img :src="record.data.imageBase64" class="w-full h-full object-cover"></div>
                     </div>
+                    
                     <div v-if="record.category === 'food'">
                         <div class="flex justify-between items-center"><p class="font-bold text-gray-700 text-sm">{{ foodTypeLabels[record.data.type] }} <span class="font-normal text-gray-500 ml-1">{{ record.data.brand }}</span></p><span v-if="record.data.status === 'eating'" class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full animate-pulse">用餐中</span><span v-else class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">已完食</span></div>
                         <div class="mt-2 text-sm text-gray-600 bg-[#FAF7F0] p-2 rounded-lg text-xs leading-relaxed">
@@ -358,8 +476,12 @@
                         <div v-if="record.data.supplements?.length > 0" class="flex gap-1 mt-2 flex-wrap"><span v-for="s in record.data.supplements" class="text-[10px] border border-gray-200 text-gray-400 px-2 py-0.5 rounded-full">{{ s }}</span></div>
                         <div v-if="record.data.status === 'eating'" class="mt-2"><button @click="quickFinish(record.id)" class="text-xs w-full py-1 bg-[#E6D2B5] text-white rounded">補按收碗 (設為剩 0g)</button></div>
                     </div>
-                    <div v-if="record.category === 'meds'">
-                        <p class="font-bold text-gray-700 text-sm">體內外驅蟲</p><p class="text-xs text-gray-500 mt-1">品牌：{{ record.data.brand }}</p>
+                    
+                    <div v-if="record.category === 'meds' || record.category === 'health'">
+                        <p class="font-bold text-gray-700 text-sm">
+                            {{ getHealthTitle(record) }}
+                        </p>
+                        <p class="text-xs text-gray-500 mt-1" v-if="record.data.brand">備註：{{ record.data.brand }}</p>
                     </div>
                 </div>
             </div>
@@ -370,8 +492,7 @@
 <script type="module">
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // 引入 Auth
-    // 🔥 修改：補上 getDocs
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; 
     import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -386,7 +507,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app); // 初始化 Auth
+    const auth = getAuth(app); 
 
     const getCurrentDateTime = () => { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); return now.toISOString().slice(0, 16); };
     const getCurrentTime = () => { const now = new Date(); return String(now.getHours()).padStart(2,'0') + ":" + String(now.getMinutes()).padStart(2,'0'); };
@@ -395,16 +516,16 @@
         data() {
             return {
                 isLoading: true,
-                currentTab: 'excretion',
+                currentTab: 'dashboard', 
                 tabs: [ 
+                    { id: 'dashboard', name: '今日', icon: 'fa-chart-pie' },
                     { id: 'excretion', name: '便溺', icon: 'fa-poop' }, 
                     { id: 'food', name: '用餐', icon: 'fa-utensils' }, 
-                    { id: 'meds', name: '驅蟲', icon: 'fa-notes-medical' }, 
+                    { id: 'health', name: '健康', icon: 'fa-heartbeat' }, 
                     { id: 'history', name: '記錄', icon: 'fa-history' } 
                 ],
                 foodTypeLabels: { dry: '乾糧', wet: '濕糧', snack: '點心' },
                 
-                // 設定值，包含點心選項
                 settings: { 
                     dryOptions: ['皇家 K36'], 
                     wetOptions: ['皇家 K36'], 
@@ -421,7 +542,7 @@
                     excretion: { type: 'poop', datetime: getCurrentDateTime(), imageBase64: null },
                     food: { type: 'dry', brand: '皇家 K36', amountGiven: '', supplements: [], datetime: getCurrentDateTime() },
                     leftover: { time: getCurrentTime(), amount: 0 },
-                    meds: { date: new Date().toISOString().split('T')[0], brand: '' }
+                    health: { date: new Date().toISOString().split('T')[0], subType: 'deworming', brand: '' }
                 },
                 records: []
             }
@@ -438,24 +559,70 @@
                     result = result.filter(record => record.timestamp.substring(0, 10) === this.filterDate);
                 }
                 if (this.filterCategory !== 'all') {
-                    result = result.filter(record => record.category === this.filterCategory);
+                    if (this.filterCategory === 'health') {
+                        result = result.filter(record => record.category === 'health' || record.category === 'meds');
+                    } else {
+                        result = result.filter(record => record.category === this.filterCategory);
+                    }
                 }
                 return result;
+            },
+            // 🔥 更新：今日統計數據 (包含細項)
+            todayStats() {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const todayRecords = this.records.filter(r => r.timestamp && r.timestamp.startsWith(todayStr));
+                
+                let poopCount = 0;
+                let peeCount = 0;
+                
+                // 初始化食物統計物件
+                let foodDetails = {
+                    total: 0,
+                    dry: 0,
+                    wet: 0,
+                    snack: 0
+                };
+
+                todayRecords.forEach(r => {
+                    if (r.category === 'excretion') {
+                        if (r.data.type === 'poop') poopCount++;
+                        if (r.data.type === 'pee') peeCount++;
+                    }
+                    if (r.category === 'food') {
+                        let eaten = 0;
+                        // 計算邏輯：如果是 eating 狀態，暫時計算「已給予」的量；如果是 finished，計算「給予 - 剩餘」
+                        const given = parseFloat(r.data.amountGiven) || 0;
+                        const left = parseFloat(r.data.amountLeft) || 0;
+                        
+                        if (r.data.status === 'eating') {
+                            eaten = given; 
+                        } else {
+                            eaten = given - left;
+                        }
+                        
+                        if (eaten > 0) {
+                            foodDetails.total += eaten;
+                            // 分類加總
+                            if (r.data.type === 'dry') foodDetails.dry += eaten;
+                            else if (r.data.type === 'wet') foodDetails.wet += eaten;
+                            else if (r.data.type === 'snack') foodDetails.snack += eaten;
+                        }
+                    }
+                });
+
+                return { poopCount, peeCount, foodDetails };
             }
         },
         async created() {
-            // 加入匿名登入流程
             signInAnonymously(auth)
                 .then(() => {
                     console.log("登入成功，開始讀取資料");
-                    // 登入成功後才開始監聽資料庫
                     const q = query(collection(db, "records"), orderBy("timestamp", "desc"));
                     onSnapshot(q, (snapshot) => { 
                         this.records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
                         this.isLoading = false; 
                     });
                     
-                    // 讀取設定
                     getDoc(doc(db, "config", "general")).then(settingsDoc => {
                          if (settingsDoc.exists()) { 
                             const data = settingsDoc.data();
@@ -475,18 +642,51 @@
                 });
         },
         methods: {
-            // 根據類型回傳對應的品牌選項
+            getCurrentDateDisplay() {
+                const d = new Date();
+                return `${d.getMonth()+1}/${d.getDate()}`;
+            },
             getFoodOptions(type) { 
                 if (type === 'dry') return this.settings.dryOptions;
                 if (type === 'wet') return this.settings.wetOptions;
                 if (type === 'snack') return this.settings.snackOptions;
                 return [];
             },
+            getHealthPlaceholder() {
+                if (this.form.health.subType === 'vaccine') return '';
+                if (this.form.health.subType === 'bath') return '';
+                return '';
+            },
+            getRecordIcon(record) {
+                if (record.category === 'excretion') return record.data.type === 'poop' ? 'fa-poop' : 'fa-tint';
+                if (record.category === 'food') return 'fa-utensils';
+                
+                if (record.category === 'meds') return 'fa-capsules'; 
+                if (record.category === 'health') {
+                    if (record.data.subType === 'vaccine') return 'fa-syringe';
+                    if (record.data.subType === 'bath') return 'fa-bath';
+                    return 'fa-capsules';
+                }
+                return 'fa-circle';
+            },
+            getRecordTitle(record) {
+                 if (record.category === 'excretion') return record.data.type === 'poop' ? '便便' : '尿尿';
+                 if (record.category === 'food') return `${this.foodTypeLabels[record.data.type] || '食物'} ${record.data.brand}`;
+                 if (record.category === 'meds' || record.category === 'health') return this.getHealthTitle(record);
+                 return '紀錄';
+            },
+            getHealthTitle(record) {
+                if (record.category === 'meds') return '體內外驅蟲'; 
+                const subType = record.data.subType;
+                if (subType === 'vaccine') return '施打疫苗';
+                if (subType === 'bath') return '洗香香';
+                return '體內外驅蟲';
+            },
+
             formatDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; },
             formatTime(isoString) { if(!isoString) return '--:--'; const d = new Date(isoString); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; },
             async updateSettings() { await setDoc(doc(db, "config", "general"), this.settings); },
             
-            // 新增品牌功能 (含點心)
             addFoodOption() { 
                 const newOpt = prompt("請輸入新品牌名稱："); 
                 if (newOpt) { 
@@ -525,6 +725,9 @@
 
             openEditModal(record) {
                 this.editForm = JSON.parse(JSON.stringify(record));
+                if (this.editForm.category === 'meds' && !this.editForm.data.subType) {
+                    this.editForm.data.subType = 'deworming';
+                }
                 this.isEditModalOpen = true;
             },
 
@@ -536,8 +739,10 @@
                     } else if (this.editForm.category === 'excretion') {
                          this.editForm.timestamp = this.editForm.data.datetime;
                     }
+                    
                     await updateDoc(doc(db, "records", this.editForm.id), {
-                        timestamp: this.editForm.timestamp,
+                        category: this.editForm.category, 
+                        timestamp: this.editForm.timestamp || this.editForm.data.date, 
                         data: this.editForm.data
                     });
                     this.isEditModalOpen = false;
@@ -558,7 +763,7 @@
                     });
                     this.form.excretion.imageBase64 = null;
                     this.form.excretion.datetime = getCurrentDateTime();
-                    this.currentTab = 'history';
+                    this.currentTab = 'dashboard'; 
                 } catch (error) { alert("儲存失敗！\n" + error.message); } finally { this.isLoading = false; }
             },
 
@@ -572,6 +777,7 @@
                     });
                     this.form.food.amountGiven = ''; this.form.food.supplements = [];
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    this.currentTab = 'dashboard'; 
                 } catch (e) { alert("錯誤：" + e.message); }
             },
             async submitLeftover() {
@@ -579,7 +785,7 @@
                 const now = new Date(); const [h, m] = this.form.leftover.time.split(':'); now.setHours(h, m);
                 try {
                     await updateDoc(doc(db, "records", this.activeMeal.id), { "data.status": "finished", "data.endTime": now.toISOString(), "data.amountLeft": this.form.leftover.amount });
-                    this.currentTab = 'history';
+                    this.currentTab = 'dashboard';
                 } catch (e) { alert("錯誤：" + e.message); }
             },
             async quickFinish(id) {
@@ -588,60 +794,44 @@
                     await updateDoc(doc(db, "records", id), { "data.status": "finished", "data.endTime": new Date().toISOString(), "data.amountLeft": 0 });
                 } catch (e) { alert("錯誤：" + e.message); }
             },
-            async submitMeds() {
+            
+            async submitHealth() {
                 try {
-                    await addDoc(collection(db, "records"), { category: 'meds', timestamp: new Date().toISOString(), data: { ...this.form.meds } });
-                    this.form.meds.brand = ''; this.currentTab = 'history';
+                    await addDoc(collection(db, "records"), { 
+                        category: 'health', 
+                        timestamp: new Date().toISOString(), 
+                        data: { ...this.form.health } 
+                    });
+                    this.form.health.brand = ''; 
+                    this.currentTab = 'history';
                 } catch (e) { alert("錯誤：" + e.message); }
             },
+            
             async deleteRecord(id) {
                 if(!confirm('確定要刪除嗎？')) return;
                 try { await deleteDoc(doc(db, "records", id)); } catch (e) { alert("刪除失敗：" + e.message); }
             },
-            // 🔥 新增：備份所有資料
             async backupData() {
                 if (!confirm("確定要下載備份檔案嗎？")) return;
                 try {
                     this.isLoading = true;
-                    // 直接抓取 'records' 集合裡的所有資料
                     const querySnapshot = await getDocs(collection(db, "records"));
                     const dataToBackup = [];
-
-                    querySnapshot.forEach((doc) => {
-                        dataToBackup.push({
-                            id: doc.id,
-                            ...doc.data()
-                        });
-                    });
-
-                    if (dataToBackup.length === 0) {
-                        alert("目前沒有資料可以備份");
-                        return;
-                    }
-
-                    // 轉成 JSON 並下載
+                    querySnapshot.forEach((doc) => { dataToBackup.push({ id: doc.id, ...doc.data() }); });
+                    if (dataToBackup.length === 0) { alert("目前沒有資料可以備份"); return; }
                     const jsonString = JSON.stringify(dataToBackup, null, 2);
                     const blob = new Blob([jsonString], { type: "application/json" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    
                     const dateStr = new Date().toISOString().split('T')[0];
                     a.href = url;
-                    a.download = `pearl_backup_${dateStr}.json`; // 檔名
-                    
+                    a.download = `pearl_backup_${dateStr}.json`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    
                     alert(`備份成功！已下載 ${dataToBackup.length} 筆資料。`);
-
-                } catch (error) {
-                    console.error("備份失敗", error);
-                    alert("備份失敗：" + error.message);
-                } finally {
-                    this.isLoading = false;
-                }
+                } catch (error) { console.error("備份失敗", error); alert("備份失敗：" + error.message); } finally { this.isLoading = false; }
             }
         }
     }).mount('#app');
