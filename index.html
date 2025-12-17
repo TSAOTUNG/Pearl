@@ -95,11 +95,17 @@
                         <div class="flex space-x-4 mb-4">
                             <label class="flex-1 cursor-pointer group">
                                 <input type="radio" v-model="editForm.data.type" value="poop" class="hidden peer">
-                                <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition"><div class="text-xl">💩</div><div class="text-xs">便便</div></div>
+                                <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition">
+                                    <div class="mb-1"><i class="fas fa-poop text-xl" :class="editForm.data.type === 'poop' ? 'text-white' : 'text-[#C0A062]'"></i></div>
+                                    <div class="text-xs">便便</div>
+                                </div>
                             </label>
                             <label class="flex-1 cursor-pointer group">
                                 <input type="radio" v-model="editForm.data.type" value="pee" class="hidden peer">
-                                <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition"><div class="text-xl">💧</div><div class="text-xs">尿尿</div></div>
+                                <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition">
+                                    <div class="mb-1"><i class="fas fa-tint text-xl" :class="editForm.data.type === 'pee' ? 'text-white' : 'text-[#C0A062]'"></i></div>
+                                    <div class="text-xs">尿尿</div>
+                                </div>
                             </label>
                         </div>
                     </div>
@@ -228,7 +234,9 @@
                         </div>
                     </div>
                     
-                    <div class="h-px bg-gray-100 w-full mb-3"></div> <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="h-px bg-gray-100 w-full mb-3"></div>
+                    
+                    <div class="grid grid-cols-3 gap-2 text-center">
                         <div>
                             <div class="text-[10px] text-gray-400 mb-1">乾糧</div>
                             <div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.dry.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div>
@@ -443,7 +451,7 @@
             <div v-for="record in filteredRecords" :key="record.id" class="cream-card p-4 rounded-xl flex items-start space-x-3 relative transition-transform active:scale-[0.99]">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-1" 
                      :class="{
-                        'bg-yellow-50 text-yellow-600': record.category === 'excretion', 
+                        'bg-[#FFF8E1] text-[#C0A062]': record.category === 'excretion', 
                         'bg-orange-50 text-orange-600': record.category === 'food', 
                         'bg-blue-50 text-blue-600': record.category === 'meds' || record.category === 'health'
                      }">
@@ -653,9 +661,9 @@
                 return [];
             },
             getHealthPlaceholder() {
-                if (this.form.health.subType === 'vaccine') return '';
-                if (this.form.health.subType === 'bath') return '';
-                return '';
+                if (this.form.health.subType === 'vaccine') return '例如：三合一、狂犬病';
+                if (this.form.health.subType === 'bath') return '例如：美容洗澡、在家洗';
+                return '例如：全能貓、寵愛';
             },
             getRecordIcon(record) {
                 if (record.category === 'excretion') return record.data.type === 'poop' ? 'fa-poop' : 'fa-tint';
