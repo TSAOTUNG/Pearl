@@ -638,7 +638,6 @@
                 return { poopCount, peeCount, foodDetails };
             },
             
-            // 🔥 更新：英文年齡計算 (自動處理單複數)
             ageDisplay() {
                 const birth = new Date('2025-06-28');
                 const now = new Date();
@@ -802,6 +801,9 @@
                          this.editForm.timestamp = this.editForm.data.startTime; 
                     } else if (this.editForm.category === 'excretion') {
                          this.editForm.timestamp = this.editForm.data.datetime;
+                    } else if (this.editForm.category === 'health' || this.editForm.category === 'meds') {
+                         // 修正：確保修改日期時，卡片顯示的時間也會變更
+                         this.editForm.timestamp = this.editForm.data.date;
                     }
                     
                     await updateDoc(doc(db, "records", this.editForm.id), {
@@ -863,7 +865,8 @@
                 try {
                     await addDoc(collection(db, "records"), { 
                         category: 'health', 
-                        timestamp: new Date().toISOString(), 
+                        // 修正：使用表單選擇的日期
+                        timestamp: this.form.health.date, 
                         data: { ...this.form.health } 
                     });
                     this.form.health.brand = ''; 
