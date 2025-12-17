@@ -206,6 +206,27 @@
                 <span class="text-xs text-gray-400 bg-white px-2 py-1 rounded-full border border-gray-100">{{ getCurrentDateDisplay() }}</span>
             </div>
 
+            <div class="relative overflow-hidden rounded-2xl shadow-sm border border-[#FFE082] bg-gradient-to-r from-[#FFFDE7] via-[#FFF8E1] to-[#FFFDE7] p-4 transition-transform hover:scale-[1.01]">
+                <div class="absolute -right-2 -top-2 text-6xl opacity-20 rotate-12 text-[#FFB300]">
+                    <i class="fas fa-heart"></i>
+                </div>
+                
+                <div class="flex items-center relative z-10">
+                    <div class="text-4xl text-[#C0A062] mr-4 drop-shadow-sm">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    
+                    <div>
+                        <div class="text-[10px] font-bold text-[#F9A825] tracking-wider mb-0.5 uppercase flex items-center">
+                            <i class="fas fa-star"></i> 小寶貝養成中
+                        </div>
+                        <div class="text-lg text-[#8C7B66] tracking-wide font-medium font-sans">
+                            {{ ageDisplay }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <div class="stat-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm">
                     <div class="mb-2">
@@ -575,7 +596,6 @@
                 }
                 return result;
             },
-            // 🔥 更新：今日統計數據 (包含細項)
             todayStats() {
                 const todayStr = new Date().toISOString().split('T')[0];
                 const todayRecords = this.records.filter(r => r.timestamp && r.timestamp.startsWith(todayStr));
@@ -583,7 +603,6 @@
                 let poopCount = 0;
                 let peeCount = 0;
                 
-                // 初始化食物統計物件
                 let foodDetails = {
                     total: 0,
                     dry: 0,
@@ -598,7 +617,6 @@
                     }
                     if (r.category === 'food') {
                         let eaten = 0;
-                        // 計算邏輯：如果是 eating 狀態，暫時計算「已給予」的量；如果是 finished，計算「給予 - 剩餘」
                         const given = parseFloat(r.data.amountGiven) || 0;
                         const left = parseFloat(r.data.amountLeft) || 0;
                         
@@ -610,7 +628,6 @@
                         
                         if (eaten > 0) {
                             foodDetails.total += eaten;
-                            // 分類加總
                             if (r.data.type === 'dry') foodDetails.dry += eaten;
                             else if (r.data.type === 'wet') foodDetails.wet += eaten;
                             else if (r.data.type === 'snack') foodDetails.snack += eaten;
@@ -619,6 +636,45 @@
                 });
 
                 return { poopCount, peeCount, foodDetails };
+            },
+            
+            // 🔥 更新：英文年齡計算 (自動處理單複數)
+            ageDisplay() {
+                const birth = new Date('2025-06-28');
+                const now = new Date();
+                
+                if (now < birth) {
+                    const diffTime = Math.abs(birth - now);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    return `Coming soon in ${diffDays} days`;
+                }
+
+                let years = now.getFullYear() - birth.getFullYear();
+                let months = now.getMonth() - birth.getMonth();
+                let days = now.getDate() - birth.getDate();
+
+                if (days < 0) {
+                    months--;
+                    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                    days += prevMonth.getDate();
+                }
+
+                if (months < 0) {
+                    years--;
+                    months += 12;
+                }
+
+                let result = [];
+                
+                if (years > 0) {
+                    result.push(`${years} year${years > 1 ? 's' : ''}`);
+                }
+                if (months > 0) {
+                    result.push(`${months} month${months > 1 ? 's' : ''}`);
+                }
+                result.push(`${days} day${days > 1 ? 's' : ''}`);
+
+                return result.join(' ');
             }
         },
         async created() {
