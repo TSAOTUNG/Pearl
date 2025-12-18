@@ -89,7 +89,7 @@
                 <div class="space-y-4">
                     <div v-if="editForm.category === 'excretion'">
                         <div class="mb-4">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">時間</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">時間 (TW)</label>
                             <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.datetime" class="ios-input-fix"></div>
                         </div>
                         <div class="flex space-x-4 mb-4">
@@ -112,7 +112,7 @@
 
                     <div v-if="editForm.category === 'food'">
                         <div class="mb-4">
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">放飯時間</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">放飯時間 (TW)</label>
                             <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.startTime" class="ios-input-fix"></div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 mb-4">
@@ -134,7 +134,7 @@
                              <div class="input-wrapper"><input type="number" v-model.number="editForm.data.amountLeft" class="ios-input-fix"></div>
                         </div>
                         <div v-if="editForm.data.status === 'finished'" class="mb-2">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">完食時間</label>
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">完食時間 (TW)</label>
                              <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.endTime" class="ios-input-fix"></div>
                         </div>
                     </div>
@@ -202,7 +202,7 @@
         
         <div v-if="currentTab === 'dashboard'" class="space-y-4 animate-fade-in">
             <div class="flex justify-between items-center mb-1 px-1">
-                <h2 class="text-lg font-bold text-[#8C7B66]">今日概況</h2>
+                <h2 class="text-lg font-bold text-[#8C7B66]">今日概況 (TW)</h2>
                 <span class="text-xs text-gray-400 bg-white px-2 py-1 rounded-full border border-gray-100">{{ getCurrentDateDisplay() }}</span>
             </div>
 
@@ -290,7 +290,7 @@
                 <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-poop mr-2"></i>便溺記錄</h2>
                 
                 <div class="mb-5">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">時間</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">時間 (TW)</label>
                     <div class="input-wrapper">
                         <input type="datetime-local" v-model="form.excretion.datetime" class="ios-input-fix">
                     </div>
@@ -343,9 +343,9 @@
                 <h4 class="text-sm font-bold text-gray-600 mb-3 text-center">我要收碗 (記錄剩餘)</h4>
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
-                        <label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間</label>
+                        <label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間 (TW)</label>
                         <div class="input-wrapper">
-                            <input type="time" v-model="form.leftover.time" class="ios-input-fix">
+                            <input type="datetime-local" v-model="form.leftover.datetime" class="ios-input-fix">
                         </div>
                     </div>
                     <div>
@@ -362,7 +362,7 @@
                 <h2 class="text-lg font-bold mb-4 text-[#8C7B66] flex items-center justify-between"><span><i class="fas fa-utensils mr-2"></i>我要放飯</span></h2>
                 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">放飯時間</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">放飯時間 (TW)</label>
                     <div class="input-wrapper">
                         <input type="datetime-local" v-model="form.food.datetime" class="ios-input-fix">
                     </div>
@@ -445,7 +445,7 @@
 
         <div v-if="currentTab === 'history'" class="space-y-4 animate-fade-in pb-12">
             
-            <div class="mt-2 mb-2">
+            <div class="mt-2 mb-2 space-y-2">
                 <button @click="backupData" class="w-full py-2 bg-white border border-stone-200 text-stone-400 rounded-xl shadow-sm text-xs flex items-center justify-center space-x-2 active:scale-95 transition hover:bg-stone-50">
                     <i class="fas fa-download"></i>
                     <span>Download Backup</span>
@@ -522,7 +522,7 @@
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; 
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, query, orderBy, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDG2mRZslEFj8-l9on8lZDh2YisuJGoNdk",
@@ -538,8 +538,44 @@
     const db = getFirestore(app);
     const auth = getAuth(app); 
 
-    const getCurrentDateTime = () => { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); return now.toISOString().slice(0, 16); };
-    const getCurrentTime = () => { const now = new Date(); return String(now.getHours()).padStart(2,'0') + ":" + String(now.getMinutes()).padStart(2,'0'); };
+    // --- 核心時區處理 (強制台灣時間 UTC+8) ---
+    const getTaiwanDate = () => {
+        const d = new Date();
+        const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        return new Date(utc + (3600000 * 8)); 
+    };
+
+    const getTaiwanDateStr = () => {
+        const tw = getTaiwanDate();
+        const year = tw.getFullYear();
+        const month = String(tw.getMonth() + 1).padStart(2, '0');
+        const day = String(tw.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const getTaiwanDateTimeStr = () => {
+        const tw = getTaiwanDate();
+        const year = tw.getFullYear();
+        const month = String(tw.getMonth() + 1).padStart(2, '0');
+        const day = String(tw.getDate()).padStart(2, '0');
+        const hour = String(tw.getHours()).padStart(2, '0');
+        const minute = String(tw.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hour}:${minute}`;
+    };
+
+    // 將 UTC 字串轉換為 台灣時間字串
+    const convertUtcToTwString = (isoStr) => {
+        if (!isoStr || !isoStr.endsWith('Z')) return isoStr; 
+        const dateObj = new Date(isoStr);
+        const twTime = new Date(dateObj.getTime() + (480 + dateObj.getTimezoneOffset()) * 60000);
+        
+        const year = twTime.getFullYear();
+        const month = String(twTime.getMonth() + 1).padStart(2, '0');
+        const day = String(twTime.getDate()).padStart(2, '0');
+        const hour = String(twTime.getHours()).padStart(2, '0');
+        const minute = String(twTime.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hour}:${minute}`;
+    };
 
     createApp({
         data() {
@@ -568,10 +604,10 @@
                 editForm: { id: null, category: '', data: {} },
                 
                 form: {
-                    excretion: { type: 'poop', datetime: getCurrentDateTime(), imageBase64: null },
-                    food: { type: 'dry', brand: '皇家 K36', amountGiven: '', supplements: [], datetime: getCurrentDateTime() },
-                    leftover: { time: getCurrentTime(), amount: 0 },
-                    health: { date: new Date().toISOString().split('T')[0], subType: 'deworming', brand: '' }
+                    excretion: { type: 'poop', datetime: getTaiwanDateTimeStr(), imageBase64: null },
+                    food: { type: 'dry', brand: '皇家 K36', amountGiven: '', supplements: [], datetime: getTaiwanDateTimeStr() },
+                    leftover: { datetime: getTaiwanDateTimeStr(), amount: 0 }, 
+                    health: { date: getTaiwanDateStr(), subType: 'deworming', brand: '' }
                 },
                 records: []
             }
@@ -583,9 +619,18 @@
                 return { id: record.id, ...record.data };
             },
             filteredRecords() {
-                let result = this.records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                let result = this.records.sort((a, b) => {
+                    const timeA = a.timestamp.endsWith('Z') ? new Date(a.timestamp).getTime() : new Date(a.timestamp).getTime(); 
+                    const timeB = b.timestamp.endsWith('Z') ? new Date(b.timestamp).getTime() : new Date(b.timestamp).getTime();
+                    return timeB - timeA;
+                });
+                
                 if (this.filterDate) {
-                    result = result.filter(record => record.timestamp.substring(0, 10) === this.filterDate);
+                    result = result.filter(record => {
+                        let t = record.timestamp;
+                        if (t.endsWith('Z')) t = convertUtcToTwString(t);
+                        return t.startsWith(this.filterDate);
+                    });
                 }
                 if (this.filterCategory !== 'all') {
                     if (this.filterCategory === 'health') {
@@ -597,18 +642,16 @@
                 return result;
             },
             todayStats() {
-                const todayStr = new Date().toISOString().split('T')[0];
-                const todayRecords = this.records.filter(r => r.timestamp && r.timestamp.startsWith(todayStr));
+                const todayStr = getTaiwanDateStr();
+                const todayRecords = this.records.filter(r => {
+                    let t = r.timestamp;
+                    if (t && t.endsWith('Z')) t = convertUtcToTwString(t);
+                    return t && t.startsWith(todayStr);
+                });
                 
                 let poopCount = 0;
                 let peeCount = 0;
-                
-                let foodDetails = {
-                    total: 0,
-                    dry: 0,
-                    wet: 0,
-                    snack: 0
-                };
+                let foodDetails = { total: 0, dry: 0, wet: 0, snack: 0 };
 
                 todayRecords.forEach(r => {
                     if (r.category === 'excretion') {
@@ -620,11 +663,7 @@
                         const given = parseFloat(r.data.amountGiven) || 0;
                         const left = parseFloat(r.data.amountLeft) || 0;
                         
-                        if (r.data.status === 'eating') {
-                            eaten = given; 
-                        } else {
-                            eaten = given - left;
-                        }
+                        if (r.data.status === 'eating') { eaten = given; } else { eaten = given - left; }
                         
                         if (eaten > 0) {
                             foodDetails.total += eaten;
@@ -640,7 +679,7 @@
             
             ageDisplay() {
                 const birth = new Date('2025-06-28');
-                const now = new Date();
+                const now = getTaiwanDate();
                 
                 if (now < birth) {
                     const diffTime = Math.abs(birth - now);
@@ -664,13 +703,8 @@
                 }
 
                 let result = [];
-                
-                if (years > 0) {
-                    result.push(`${years} year${years > 1 ? 's' : ''}`);
-                }
-                if (months > 0) {
-                    result.push(`${months} month${months > 1 ? 's' : ''}`);
-                }
+                if (years > 0) result.push(`${years} year${years > 1 ? 's' : ''}`);
+                if (months > 0) result.push(`${months} month${months > 1 ? 's' : ''}`);
                 result.push(`${days} day${days > 1 ? 's' : ''}`);
 
                 return result.join(' ');
@@ -706,8 +740,9 @@
         },
         methods: {
             getCurrentDateDisplay() {
-                const d = new Date();
-                return `${d.getMonth()+1}/${d.getDate()}`;
+                const str = getTaiwanDateStr(); 
+                const [y, m, d] = str.split('-');
+                return `${parseInt(m)}/${parseInt(d)}`;
             },
             getFoodOptions(type) { 
                 if (type === 'dry') return this.settings.dryOptions;
@@ -745,9 +780,24 @@
                 if (subType === 'bath') return '洗香香';
                 return '體內外驅蟲';
             },
+            formatDate(isoString) { 
+                if(!isoString) return ''; 
+                let targetStr = isoString;
+                if (isoString.endsWith('Z')) targetStr = convertUtcToTwString(isoString);
 
-            formatDate(isoString) { if(!isoString) return ''; const d = new Date(isoString); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; },
-            formatTime(isoString) { if(!isoString) return '--:--'; const d = new Date(isoString); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; },
+                const [datePart] = targetStr.split('T');
+                const [y, m, d] = datePart.split('-');
+                return `${y}/${parseInt(m)}/${parseInt(d)}`; 
+            },
+            formatTime(isoString) { 
+                if(!isoString) return '--:--'; 
+                let targetStr = isoString;
+                if (isoString.endsWith('Z')) targetStr = convertUtcToTwString(isoString);
+
+                const parts = targetStr.split('T');
+                if (parts.length < 2) return '--:--';
+                return parts[1]; 
+            },
             async updateSettings() { await setDoc(doc(db, "config", "general"), this.settings); },
             
             addFoodOption() { 
@@ -788,6 +838,19 @@
 
             openEditModal(record) {
                 this.editForm = JSON.parse(JSON.stringify(record));
+                if (this.editForm.timestamp && this.editForm.timestamp.endsWith('Z')) {
+                    this.editForm.timestamp = convertUtcToTwString(this.editForm.timestamp);
+                }
+                if (this.editForm.data.startTime && this.editForm.data.startTime.endsWith('Z')) {
+                    this.editForm.data.startTime = convertUtcToTwString(this.editForm.data.startTime);
+                }
+                if (this.editForm.data.endTime && this.editForm.data.endTime.endsWith('Z')) {
+                    this.editForm.data.endTime = convertUtcToTwString(this.editForm.data.endTime);
+                }
+                if (this.editForm.data.datetime && this.editForm.data.datetime.endsWith('Z')) {
+                    this.editForm.data.datetime = convertUtcToTwString(this.editForm.data.datetime);
+                }
+
                 if (this.editForm.category === 'meds' && !this.editForm.data.subType) {
                     this.editForm.data.subType = 'deworming';
                 }
@@ -802,7 +865,6 @@
                     } else if (this.editForm.category === 'excretion') {
                          this.editForm.timestamp = this.editForm.data.datetime;
                     } else if (this.editForm.category === 'health' || this.editForm.category === 'meds') {
-                         // 修正：確保修改日期時，卡片顯示的時間也會變更
                          this.editForm.timestamp = this.editForm.data.date;
                     }
                     
@@ -828,7 +890,7 @@
                         data: { ...this.form.excretion }
                     });
                     this.form.excretion.imageBase64 = null;
-                    this.form.excretion.datetime = getCurrentDateTime();
+                    this.form.excretion.datetime = getTaiwanDateTimeStr();
                     this.currentTab = 'dashboard'; 
                 } catch (error) { alert("儲存失敗！\n" + error.message); } finally { this.isLoading = false; }
             },
@@ -848,16 +910,16 @@
             },
             async submitLeftover() {
                 if (!this.activeMeal) return;
-                const now = new Date(); const [h, m] = this.form.leftover.time.split(':'); now.setHours(h, m);
+                const endTimeStr = this.form.leftover.datetime; 
                 try {
-                    await updateDoc(doc(db, "records", this.activeMeal.id), { "data.status": "finished", "data.endTime": now.toISOString(), "data.amountLeft": this.form.leftover.amount });
+                    await updateDoc(doc(db, "records", this.activeMeal.id), { "data.status": "finished", "data.endTime": endTimeStr, "data.amountLeft": this.form.leftover.amount });
                     this.currentTab = 'dashboard';
                 } catch (e) { alert("錯誤：" + e.message); }
             },
             async quickFinish(id) {
                 if(!confirm('確定要直接結算嗎？')) return;
                 try {
-                    await updateDoc(doc(db, "records", id), { "data.status": "finished", "data.endTime": new Date().toISOString(), "data.amountLeft": 0 });
+                    await updateDoc(doc(db, "records", id), { "data.status": "finished", "data.endTime": getTaiwanDateTimeStr(), "data.amountLeft": 0 });
                 } catch (e) { alert("錯誤：" + e.message); }
             },
             
@@ -865,7 +927,6 @@
                 try {
                     await addDoc(collection(db, "records"), { 
                         category: 'health', 
-                        // 修正：使用表單選擇的日期
                         timestamp: this.form.health.date, 
                         data: { ...this.form.health } 
                     });
@@ -890,7 +951,7 @@
                     const blob = new Blob([jsonString], { type: "application/json" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    const dateStr = new Date().toISOString().split('T')[0];
+                    const dateStr = getTaiwanDateStr();
                     a.href = url;
                     a.download = `pearl_backup_${dateStr}.json`;
                     document.body.appendChild(a);
