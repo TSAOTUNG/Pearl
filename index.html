@@ -344,8 +344,17 @@
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <div>
                         <label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間 (TW)</label>
-                        <div class="input-wrapper">
-                            <input type="datetime-local" v-model="form.leftover.datetime" class="ios-input-fix">
+                        
+                        <div class="input-wrapper relative">
+                            <input 
+                                type="datetime-local" 
+                                v-model="form.leftover.datetime" 
+                                class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                            >
+                            
+                            <div class="text-center font-medium text-[#5D5D5D] text-lg">
+                                {{ formatTime(form.leftover.datetime) }}
+                            </div>
                         </div>
                     </div>
                     <div>
