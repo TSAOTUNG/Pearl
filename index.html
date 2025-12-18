@@ -494,7 +494,15 @@
                     </div>
                     
                     <div v-if="record.category === 'food'">
-                        <div class="flex justify-between items-center"><p class="font-bold text-gray-700 text-sm">{{ foodTypeLabels[record.data.type] }} <span class="font-normal text-gray-500 ml-1">{{ record.data.brand }}</span></p><span v-if="record.data.status === 'eating'" class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full animate-pulse">用餐中</span><span v-else class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">已完食</span></div>
+                        <div class="flex justify-between items-start"> 
+                            <p class="font-bold text-gray-700 text-sm flex-1 pr-2 leading-relaxed">
+                                {{ foodTypeLabels[record.data.type] }} 
+                                <span class="font-normal text-gray-500 ml-1 break-words">{{ record.data.brand }}</span>
+                            </p>
+                            <span v-if="record.data.status === 'eating'" class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap shrink-0 mt-0.5">用餐中</span>
+                            <span v-else class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 mt-0.5">已完食</span>
+                        </div>
+                        
                         <div class="mt-2 text-sm text-gray-600 bg-[#FAF7F0] p-2 rounded-lg text-xs leading-relaxed">
                             <div class="text-[10px] text-gray-400 mb-1 border-b border-gray-200 pb-1 flex justify-between"><span><i class="far fa-clock"></i> {{ formatTime(record.data.startTime) }} 放飯</span><span v-if="record.data.endTime"> ➔ {{ formatTime(record.data.endTime) }} 收碗</span></div>
                             <div class="flex justify-between mt-1"><span>給予：{{ record.data.amountGiven }}g</span><span v-if="record.data.endTime">剩餘：{{ record.data.amountLeft }}g</span><span v-else class="text-gray-400 italic">尚未收碗</span></div>
