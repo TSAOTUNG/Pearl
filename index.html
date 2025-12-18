@@ -13,9 +13,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* 防止 Vue 尚未載入時出現的畫面閃爍 (v-cloak) */
+        [v-cloak] { display: none !important; }
+
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #FFFDF5; color: #5D5D5D; -webkit-tap-highlight-color: transparent; }
         .cream-card { background-color: #FFFFFF; border: 1px solid #F0E6D2; box-shadow: 0 4px 10px -2px rgba(230, 210, 181, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -37,10 +41,23 @@
             background-color: #FAF7F0; 
             border: 1px solid #EBE0D0;
             border-radius: 0.75rem;
-            height: 3rem;
+            min-height: 3rem; /* 允許高度自適應 */
             position: relative;
+            overflow: hidden; /* 確保內容不溢出 */
         }
         
+        /* 隱藏原生輸入框文字，但保留點擊功能 */
+        .ios-input-hidden {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            z-index: 10;
+            cursor: pointer;
+        }
+
         .ios-input-fix {
             background: transparent;
             border: none;
@@ -59,6 +76,19 @@
             color: #5D5D5D;
         }
 
+        /* 自訂顯示層 */
+        .custom-display-layer {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none; /* 讓點擊穿透到 input */
+            z-index: 1;
+            font-family: 'Rubik', sans-serif; /* 用英文字體顯示數字比較好看 */
+        }
+
         /* Modal 動畫 */
         .modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
         .modal-enter-from, .modal-leave-to { opacity: 0; }
@@ -73,7 +103,7 @@
 </head>
 <body class="min-h-screen pb-24">
 
-<div id="app">
+<div id="app" v-cloak>
     <div v-if="isLoading" class="fixed inset-0 bg-[#FFFDF5] z-50 flex items-center justify-center flex-col transition-opacity duration-300">
         <img src="./record.JPG" class="w-24 h-24 mb-4 rounded-full shadow-sm animate-[bounce_1s_infinite] object-cover avatar-img">
         <div class="loader mb-2"></div>
@@ -90,7 +120,12 @@
                     <div v-if="editForm.category === 'excretion'">
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">時間 (TW)</label>
-                            <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.datetime" class="ios-input-fix"></div>
+                            <div class="input-wrapper">
+                                <div class="custom-display-layer">
+                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.datetime).full }}</span>
+                                </div>
+                                <input type="datetime-local" v-model="editForm.data.datetime" class="ios-input-hidden">
+                            </div>
                         </div>
                         <div class="flex space-x-4 mb-4">
                             <label class="flex-1 cursor-pointer group">
@@ -113,7 +148,12 @@
                     <div v-if="editForm.category === 'food'">
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">放飯時間 (TW)</label>
-                            <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.startTime" class="ios-input-fix"></div>
+                            <div class="input-wrapper">
+                                <div class="custom-display-layer">
+                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.startTime).full }}</span>
+                                </div>
+                                <input type="datetime-local" v-model="editForm.data.startTime" class="ios-input-hidden">
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div>
@@ -135,14 +175,24 @@
                         </div>
                         <div v-if="editForm.data.status === 'finished'" class="mb-2">
                              <label class="block text-xs font-bold text-gray-400 uppercase mb-1">完食時間 (TW)</label>
-                             <div class="input-wrapper"><input type="datetime-local" v-model="editForm.data.endTime" class="ios-input-fix"></div>
+                             <div class="input-wrapper">
+                                <div class="custom-display-layer">
+                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.endTime).full }}</span>
+                                </div>
+                                <input type="datetime-local" v-model="editForm.data.endTime" class="ios-input-hidden">
+                            </div>
                         </div>
                     </div>
 
                     <div v-if="editForm.category === 'meds' || editForm.category === 'health'">
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">日期</label>
-                            <div class="input-wrapper"><input type="date" v-model="editForm.data.date" class="ios-input-fix"></div>
+                            <div class="input-wrapper">
+                                <div class="custom-display-layer">
+                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.date).full }}</span>
+                                </div>
+                                <input type="date" v-model="editForm.data.date" class="ios-input-hidden">
+                            </div>
                         </div>
                         <div class="flex space-x-2 mb-4">
                             <label class="flex-1 cursor-pointer group">
@@ -292,7 +342,10 @@
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">時間 (TW)</label>
                     <div class="input-wrapper">
-                        <input type="datetime-local" v-model="form.excretion.datetime" class="ios-input-fix">
+                        <div class="custom-display-layer">
+                            <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.excretion.datetime).full }}</span>
+                        </div>
+                        <input type="datetime-local" v-model="form.excretion.datetime" class="ios-input-hidden">
                     </div>
                 </div>
 
@@ -342,25 +395,21 @@
                 <hr class="border-dashed border-gray-200 my-4">
                 <h4 class="text-sm font-bold text-gray-600 mb-3 text-center">我要收碗 (記錄剩餘)</h4>
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div>
+                    <div class="h-full">
                         <label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間 (TW)</label>
-                        
-                        <div class="input-wrapper relative">
-                            <input 
-                                type="datetime-local" 
-                                v-model="form.leftover.datetime" 
-                                class="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
-                            >
-                            
-                            <div class="text-center font-medium text-[#5D5D5D] text-lg">
-                                {{ formatTime(form.leftover.datetime) }}
+                        <div class="input-wrapper h-14">
+                            <div class="custom-display-layer">
+                                <div class="text-xl text-gray-700 tracking-wider">
+                                    {{ getFormattedDisplay(form.leftover.datetime).time }}
+                                </div>
                             </div>
+                            <input type="datetime-local" v-model="form.leftover.datetime" class="ios-input-hidden">
                         </div>
                     </div>
                     <div>
                         <label class="block text-[10px] text-gray-400 mb-1 text-center">剩餘 (g)</label>
-                        <div class="input-wrapper">
-                            <input type="number" v-model.number="form.leftover.amount" class="ios-input-fix" placeholder="0" style="padding-top:0">
+                        <div class="input-wrapper h-14">
+                            <input type="number" v-model.number="form.leftover.amount" class="ios-input-fix text-lg font-bold" placeholder="0" style="padding-top:0">
                         </div>
                     </div>
                 </div>
@@ -373,7 +422,10 @@
                 <div class="mb-4">
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">放飯時間 (TW)</label>
                     <div class="input-wrapper">
-                        <input type="datetime-local" v-model="form.food.datetime" class="ios-input-fix">
+                        <div class="custom-display-layer">
+                            <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.food.datetime).full }}</span>
+                        </div>
+                        <input type="datetime-local" v-model="form.food.datetime" class="ios-input-hidden">
                     </div>
                 </div>
 
@@ -391,7 +443,7 @@
                     <div>
                         <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">給予 (g)</label>
                         <div class="input-wrapper">
-                            <input type="number" v-model.number="form.food.amountGiven" class="ios-input-fix font-bold" style="padding-top:0">
+                            <input type="number" v-model.number="form.food.amountGiven" class="ios-input-fix font-bold text-lg" style="padding-top:0">
                         </div>
                     </div>
                 </div>
@@ -414,7 +466,10 @@
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">日期</label>
                     <div class="input-wrapper">
-                        <input type="date" v-model="form.health.date" class="ios-input-fix">
+                        <div class="custom-display-layer">
+                            <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.health.date).full }}</span>
+                        </div>
+                        <input type="date" v-model="form.health.date" class="ios-input-hidden">
                     </div>
                 </div>
 
@@ -756,6 +811,39 @@
                 });
         },
         methods: {
+            // 修改後的日期時間格式化函式 (相容 DateTime 與 Date)
+            getFormattedDisplay(isoStr) {
+                if (!isoStr) return { full: '請選擇', date: '--', time: '--' };
+
+                // 情況 1: 包含時間 (2025-12-18T13:02)
+                if (isoStr.includes('T')) {
+                    const [datePart, timePart] = isoStr.split('T');
+                    const [y, m, d] = datePart.split('-');
+                    const [H, M] = timePart.split(':');
+                    
+                    const dateStr = `${y}/${m}/${d}`;
+                    const timeStr = `${H}:${M}`;
+
+                    return {
+                        full: `${dateStr} ${timeStr}`,
+                        date: dateStr,
+                        time: timeStr
+                    };
+                }
+
+                // 情況 2: 只有日期 (2025-12-18) - 用於健康護理
+                const [y, m, d] = isoStr.split('-');
+                if (y && m && d) {
+                    const dateStr = `${y}/${m}/${d}`;
+                    return {
+                        full: dateStr, // 單純顯示 2025/12/18
+                        date: dateStr,
+                        time: ''
+                    };
+                }
+
+                return { full: isoStr, date: isoStr, time: '' };
+            },
             getCurrentDateDisplay() {
                 const str = getTaiwanDateStr(); 
                 const [y, m, d] = str.split('-');
