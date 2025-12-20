@@ -215,7 +215,7 @@
                         </div>
 
                         <div v-if="editForm.data.subType !== 'medical'" class="mb-4">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label>
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註 / 藥品品牌</label>
                              <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
                         </div>
 
@@ -528,7 +528,7 @@
                 </div>
 
                 <div v-if="form.health.subType !== 'medical'" class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註 / 藥品品牌</label>
                     <div class="input-wrapper">
                         <input type="text" v-model="form.health.brand" :placeholder="getHealthPlaceholder()" class="ios-input-fix" style="padding-top:0">
                     </div>
@@ -542,7 +542,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑</label>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑 / 診斷</label>
                         <div class="input-wrapper" style="height: auto; min-height: 5rem;">
                             <textarea v-model="form.health.orders" class="ios-input-fix" style="height: 5rem; padding-top: 10px; resize: none; text-align: left; padding-left: 1rem; padding-right: 1rem;"></textarea>
                         </div>
@@ -643,12 +643,18 @@
                         </p>
                         <p class="text-xs text-gray-500 mt-1" v-if="record.data.subType !== 'medical' && record.data.brand">備註：{{ record.data.brand }}</p>
                         
-                        <div v-if="record.data.subType === 'medical'" class="mt-2 text-xs bg-[#FAF7F0] p-2 rounded-lg space-y-1">
-                            <p v-if="record.data.hospital" class="text-gray-600"><i class="fas fa-hospital-alt mr-1 text-[#C0A062]"></i> {{ record.data.hospital }}</p>
-                            <p v-if="record.data.orders" class="text-gray-700 font-medium leading-relaxed border-t border-gray-200 pt-1 mt-1">
-                                <i class="fas fa-user-md mr-1 text-[#C0A062]"></i> {{ record.data.orders }}
-                            </p>
-                            <p v-if="record.data.notes" class="text-gray-400 mt-1">備註：{{ record.data.notes }}</p>
+                        <div v-if="record.data.subType === 'medical'" class="mt-2 text-xs bg-[#FAF7F0] p-3 rounded-lg space-y-2">
+                            <div v-if="record.data.hospital" class="flex items-start text-gray-600">
+                                <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-hospital-alt"></i></div>
+                                <div class="flex-1 leading-relaxed">{{ record.data.hospital }}</div>
+                            </div>
+                            <div v-if="record.data.orders" class="flex items-start text-gray-700 font-medium border-t border-gray-200 pt-2">
+                                <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-user-md"></i></div>
+                                <div class="flex-1 leading-relaxed">{{ record.data.orders }}</div>
+                            </div>
+                            <div v-if="record.data.notes" class="text-gray-400 pl-5 leading-relaxed">
+                                備註：{{ record.data.notes }}
+                            </div>
                         </div>
                     </div>
                 </div>
