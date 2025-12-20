@@ -215,7 +215,7 @@
                         </div>
 
                         <div v-if="editForm.data.subType !== 'medical'" class="mb-4">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註 / 藥品品牌</label>
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label>
                              <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
                         </div>
 
@@ -528,7 +528,7 @@
                 </div>
 
                 <div v-if="form.health.subType !== 'medical'" class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註 / 藥品品牌</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註</label>
                     <div class="input-wrapper">
                         <input type="text" v-model="form.health.brand" :placeholder="getHealthPlaceholder()" class="ios-input-fix" style="padding-top:0">
                     </div>
@@ -542,7 +542,7 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑 / 診斷</label>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑</label>
                         <div class="input-wrapper" style="height: auto; min-height: 5rem;">
                             <textarea v-model="form.health.orders" class="ios-input-fix" style="height: 5rem; padding-top: 10px; resize: none; text-align: left; padding-left: 1rem; padding-right: 1rem;"></textarea>
                         </div>
