@@ -648,11 +648,13 @@
                                 <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-hospital-alt"></i></div>
                                 <div class="flex-1 leading-relaxed">{{ record.data.hospital }}</div>
                             </div>
+                            
                             <div v-if="record.data.orders" class="flex items-start text-gray-700 font-medium border-t border-gray-200 pt-2">
                                 <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-user-md"></i></div>
-                                <div class="flex-1 leading-relaxed">{{ record.data.orders }}</div>
+                                <div class="flex-1 leading-relaxed whitespace-pre-wrap">{{ record.data.orders }}</div>
                             </div>
-                            <div v-if="record.data.notes" class="text-gray-400 pl-5 leading-relaxed">
+                            
+                            <div v-if="record.data.notes" class="text-gray-400 pl-5 leading-relaxed whitespace-pre-wrap">
                                 備註：{{ record.data.notes }}
                             </div>
                         </div>
