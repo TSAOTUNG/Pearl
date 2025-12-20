@@ -194,7 +194,8 @@
                                 <input type="date" v-model="editForm.data.date" class="ios-input-hidden">
                             </div>
                         </div>
-                        <div class="flex space-x-2 mb-4">
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-4">
                             <label class="flex-1 cursor-pointer group">
                                 <input type="radio" v-model="editForm.data.subType" value="deworming" class="hidden peer">
                                 <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">驅蟲</div>
@@ -207,10 +208,32 @@
                                 <input type="radio" v-model="editForm.data.subType" value="bath" class="hidden peer">
                                 <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">洗澡</div>
                             </label>
+                            <label class="flex-1 cursor-pointer group">
+                                <input type="radio" v-model="editForm.data.subType" value="medical" class="hidden peer">
+                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">就醫</div>
+                            </label>
                         </div>
-                        <div class="mb-4">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註 / 品牌</label>
+
+                        <div v-if="editForm.data.subType !== 'medical'" class="mb-4">
+                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label>
                              <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
+                        </div>
+
+                        <div v-else class="space-y-3 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">動物醫院</label>
+                                <div class="input-wrapper"><input type="text" v-model="editForm.data.hospital" class="ios-input-fix"></div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">醫囑</label>
+                                <div class="input-wrapper h-auto min-h-[4rem]">
+                                    <textarea v-model="editForm.data.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none"></textarea>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label>
+                                <div class="input-wrapper"><input type="text" v-model="editForm.data.notes" class="ios-input-fix"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -473,7 +496,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-3 mb-5">
+                <div class="grid grid-cols-2 gap-3 mb-5">
                     <label class="cursor-pointer group">
                         <input type="radio" v-model="form.health.subType" value="deworming" class="hidden peer">
                         <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
@@ -495,14 +518,43 @@
                             <div class="text-xs">洗澡</div>
                         </div>
                     </label>
+                    <label class="cursor-pointer group">
+                        <input type="radio" v-model="form.health.subType" value="medical" class="hidden peer">
+                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-stethoscope mb-1 text-lg"></i>
+                            <div class="text-xs">就醫</div>
+                        </div>
+                    </label>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註 / 藥品品牌</label>
+                <div v-if="form.health.subType !== 'medical'" class="mb-6">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註</label>
                     <div class="input-wrapper">
                         <input type="text" v-model="form.health.brand" :placeholder="getHealthPlaceholder()" class="ios-input-fix" style="padding-top:0">
                     </div>
                 </div>
+
+                <div v-else class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">動物醫院</label>
+                        <div class="input-wrapper">
+                            <input type="text" v-model="form.health.hospital" class="ios-input-fix" style="padding-top:0">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑</label>
+                        <div class="input-wrapper" style="height: auto; min-height: 5rem;">
+                            <textarea v-model="form.health.orders" class="ios-input-fix" style="height: 5rem; padding-top: 10px; resize: none; text-align: left; padding-left: 1rem; padding-right: 1rem;"></textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">備註</label>
+                        <div class="input-wrapper">
+                            <input type="text" v-model="form.health.notes" class="ios-input-fix" style="padding-top:0">
+                        </div>
+                    </div>
+                </div>
+                
                 <button @click="submitHealth" class="w-full py-3.5 bg-[#5D5D5D] text-white rounded-xl shadow-lg hover:bg-[#4A4A4A] transition font-medium">儲存記錄</button>
             </div>
         </div>
@@ -589,7 +641,15 @@
                         <p class="font-bold text-gray-700 text-sm">
                             {{ getHealthTitle(record) }}
                         </p>
-                        <p class="text-xs text-gray-500 mt-1" v-if="record.data.brand">備註：{{ record.data.brand }}</p>
+                        <p class="text-xs text-gray-500 mt-1" v-if="record.data.subType !== 'medical' && record.data.brand">備註：{{ record.data.brand }}</p>
+                        
+                        <div v-if="record.data.subType === 'medical'" class="mt-2 text-xs bg-[#FAF7F0] p-2 rounded-lg space-y-1">
+                            <p v-if="record.data.hospital" class="text-gray-600"><i class="fas fa-hospital-alt mr-1 text-[#C0A062]"></i> {{ record.data.hospital }}</p>
+                            <p v-if="record.data.orders" class="text-gray-700 font-medium leading-relaxed border-t border-gray-200 pt-1 mt-1">
+                                <i class="fas fa-user-md mr-1 text-[#C0A062]"></i> {{ record.data.orders }}
+                            </p>
+                            <p v-if="record.data.notes" class="text-gray-400 mt-1">備註：{{ record.data.notes }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -686,7 +746,14 @@
                     excretion: { type: 'poop', datetime: getTaiwanDateTimeStr(), imageBase64: null },
                     food: { type: 'dry', brand: '皇家 K36', amountGiven: '', supplements: [], datetime: getTaiwanDateTimeStr() },
                     leftover: { datetime: getTaiwanDateTimeStr(), amount: 0 }, 
-                    health: { date: getTaiwanDateStr(), subType: 'deworming', brand: '' }
+                    health: { 
+                        date: getTaiwanDateStr(), 
+                        subType: 'deworming', 
+                        brand: '', 
+                        hospital: '',    // 新增：動物醫院
+                        orders: '',      // 新增：醫囑
+                        notes: ''        // 新增：醫療備註
+                    }
                 },
                 records: []
             }
@@ -875,6 +942,7 @@
                 if (record.category === 'health') {
                     if (record.data.subType === 'vaccine') return 'fa-syringe';
                     if (record.data.subType === 'bath') return 'fa-bath';
+                    if (record.data.subType === 'medical') return 'fa-stethoscope'; 
                     return 'fa-capsules';
                 }
                 return 'fa-circle';
@@ -890,6 +958,7 @@
                 const subType = record.data.subType;
                 if (subType === 'vaccine') return '施打疫苗';
                 if (subType === 'bath') return '洗香香';
+                if (subType === 'medical') return '就診紀錄';
                 return '體內外驅蟲';
             },
             formatDate(isoString) { 
@@ -1042,7 +1111,12 @@
                         timestamp: this.form.health.date, 
                         data: { ...this.form.health } 
                     });
+                    // 重置表單，保留部分預設值
                     this.form.health.brand = ''; 
+                    this.form.health.hospital = '';
+                    this.form.health.orders = '';
+                    this.form.health.notes = '';
+                    
                     this.currentTab = 'history';
                 } catch (e) { alert("錯誤：" + e.message); }
             },
