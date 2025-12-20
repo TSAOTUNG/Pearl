@@ -817,7 +817,9 @@
                         const given = parseFloat(r.data.amountGiven) || 0;
                         const left = parseFloat(r.data.amountLeft) || 0;
                         
-                        if (r.data.status === 'eating') { eaten = given; } else { eaten = given - left; }
+                        if (r.data.status !== 'eating') { 
+                             eaten = given - left; 
+                        }
                         
                         if (eaten > 0) {
                             foodDetails.total += eaten;
