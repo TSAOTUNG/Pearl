@@ -212,7 +212,7 @@
                             </div>
                             <div v-if="editForm.data.subType === 'medical'">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">開立藥物</label>
-                                <div class="input-wrapper"><input type="text" v-model="editForm.data.medication" class="ios-input-fix" placeholder=""></div>
+                                <div class="input-wrapper h-auto min-h-[4rem]"><textarea v-model="editForm.data.medication" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none" style="display:block;"></textarea></div>
                             </div>
 
                             <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
@@ -556,7 +556,7 @@
                         </div>
                         <div v-if="form.health.subType === 'medical'">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">開立藥物</label>
-                            <div class="input-wrapper"><input type="text" v-model="form.health.medication" class="ios-input-fix" placeholder=""></div>
+                            <div class="input-wrapper" style="height: auto; min-height: 5rem;"><textarea v-model="form.health.medication" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none" style="display:block;"></textarea></div>
                         </div>
 
                         <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
@@ -680,7 +680,7 @@
 
                             <div v-if="record.data.medication" class="flex items-start text-gray-600 border-t border-gray-200 pt-2">
                                 <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-pills"></i></div>
-                                <div class="flex-1">{{ record.data.medication }}</div>
+                                <div class="flex-1 leading-relaxed whitespace-pre-wrap">{{ record.data.medication }}</div>
                             </div>
                             
                             <div v-if="record.data.billingDetails && record.data.billingDetails.length" class="border-t border-gray-200 pt-2">
