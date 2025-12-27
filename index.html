@@ -196,14 +196,16 @@
                         <div v-if="['medical', 'checkup'].includes(editForm.data.subType)" class="space-y-3 mb-4">
                             <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">動物醫院</label><div class="input-wrapper"><input type="text" v-model="editForm.data.hospital" class="ios-input-fix"></div></div>
                             
-                            <div v-if="editForm.data.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                            <div v-if="editForm.data.subType === 'checkup'">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-2">體檢項目與結果</label>
-                                <div v-for="(item, idx) in editForm.data.checkupItems" :key="idx" class="flex gap-2 mb-2 w-full">
-                                    <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                    <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                    <button @click="editForm.data.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                                <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                                    <div v-for="(item, idx) in editForm.data.checkupItems" :key="idx" class="flex gap-2 mb-2 w-full">
+                                        <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                        <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                        <button @click="editForm.data.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                                    </div>
+                                    <button @click="if(!editForm.data.checkupItems) editForm.data.checkupItems=[]; editForm.data.checkupItems.push({name:'', result:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增項目</button>
                                 </div>
-                                <button @click="if(!editForm.data.checkupItems) editForm.data.checkupItems=[]; editForm.data.checkupItems.push({name:'', result:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增項目</button>
                             </div>
 
                             <div v-if="editForm.data.subType === 'medical'">
@@ -215,17 +217,19 @@
                                 <div class="input-wrapper h-auto min-h-[4rem]"><textarea v-model="editForm.data.medication" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none" style="display:block;"></textarea></div>
                             </div>
 
-                            <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
-                                <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <div class="relative mb-2">
                                     <label class="block text-xs font-bold text-gray-400 uppercase">費用明細</label>
-                                    <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(editForm.data.billingDetails) }}</span>
+                                    <span class="absolute top-0 right-0 text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(editForm.data.billingDetails) }}</span>
                                 </div>
-                                <div v-for="(bill, idx) in editForm.data.billingDetails" :key="idx" class="flex gap-2 mb-2 w-full">
-                                    <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                    <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                    <button @click="editForm.data.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                                <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                                    <div v-for="(bill, idx) in editForm.data.billingDetails" :key="idx" class="flex gap-2 mb-2 w-full">
+                                        <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                        <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                        <button @click="editForm.data.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                                    </div>
+                                    <button @click="if(!editForm.data.billingDetails) editForm.data.billingDetails=[]; editForm.data.billingDetails.push({name:'', amount:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
                                 </div>
-                                <button @click="if(!editForm.data.billingDetails) editForm.data.billingDetails=[]; editForm.data.billingDetails.push({name:'', amount:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
                             </div>
 
                             <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label><div class="input-wrapper"><input type="text" v-model="editForm.data.notes" class="ios-input-fix"></div></div>
@@ -540,14 +544,16 @@
                     <div v-if="['medical', 'checkup'].includes(form.health.subType)" class="space-y-4 mb-6">
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">動物醫院</label><div class="input-wrapper"><input type="text" v-model="form.health.hospital" class="ios-input-fix"></div></div>
                         
-                        <div v-if="form.health.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                        <div v-if="form.health.subType === 'checkup'">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">體檢項目與結果</label>
-                            <div v-for="(item, idx) in form.health.checkupItems" :key="idx" class="flex gap-2 mb-2 w-full">
-                                <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                <button @click="form.health.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                            <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                                <div v-for="(item, idx) in form.health.checkupItems" :key="idx" class="flex gap-2 mb-2 w-full">
+                                    <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                    <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                    <button @click="form.health.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                                </div>
+                                <button @click="form.health.checkupItems.push({name:'', result:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增體檢項目</button>
                             </div>
-                            <button @click="form.health.checkupItems.push({name:'', result:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增體檢項目</button>
                         </div>
 
                         <div v-if="form.health.subType === 'medical'">
@@ -559,17 +565,19 @@
                             <div class="input-wrapper" style="height: auto; min-height: 5rem;"><textarea v-model="form.health.medication" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none" style="display:block;"></textarea></div>
                         </div>
 
-                        <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
-                            <div class="flex justify-between items-center mb-2">
-                                <label class="block text-xs font-bold text-gray-400 uppercase">費用明細</label>
-                                <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(form.health.billingDetails) }}</span>
+                        <div>
+                             <div class="relative mb-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase text-center">費用明細</label>
+                                <span class="absolute top-0 right-0 text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(form.health.billingDetails) }}</span>
                             </div>
-                            <div v-for="(bill, idx) in form.health.billingDetails" :key="idx" class="flex gap-2 mb-2 w-full">
-                                <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
-                                <button @click="form.health.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                            <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                                <div v-for="(bill, idx) in form.health.billingDetails" :key="idx" class="flex gap-2 mb-2 w-full">
+                                    <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                    <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                    <button @click="form.health.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
+                                </div>
+                                <button @click="form.health.billingDetails.push({name:'', amount:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
                             </div>
-                            <button @click="form.health.billingDetails.push({name:'', amount:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
                         </div>
 
                         <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">備註</label><div class="input-wrapper"><input type="text" v-model="form.health.notes" class="ios-input-fix"></div></div>
