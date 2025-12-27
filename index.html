@@ -385,11 +385,11 @@
                     </label>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片 (自動壓縮)</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片</label>
                     <div class="relative">
                         <input type="file" @change="(e) => handleImageCompress(e, 'excretion')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
                         <div v-if="!form.excretion.imageBase64" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
-                            <i class="fas fa-camera text-2xl mb-2"></i><span class="text-xs">點擊選擇照片</span>
+                            <i class="fas fa-camera text-2xl mb-2"></i><span class="text-xs">拍攝/上傳</span>
                         </div>
                         <div v-else class="w-full h-48 rounded-xl overflow-hidden bg-gray-100 relative shadow-inner">
                             <img :src="form.excretion.imageBase64" class="w-full h-full object-cover">
@@ -525,7 +525,7 @@
                             <div class="input-wrapper"><input type="text" v-model="form.health.brand" class="ios-input-fix"></div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片 (自動壓縮)</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片</label>
                             <div class="relative">
                                 <input type="file" @change="(e) => handleImageCompress(e, 'health')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
                                 <div v-if="!form.health.imageBase64" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50"><i class="fas fa-camera text-2xl mb-2"></i><span class="text-xs">拍攝/上傳</span></div>
@@ -556,7 +556,7 @@
                         </div>
                         <div v-if="form.health.subType === 'medical'">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">開立藥物</label>
-                            <div class="input-wrapper"><input type="text" v-model="form.health.medication" class="ios-input-fix" placeholder="藥品名稱/天數"></div>
+                            <div class="input-wrapper"><input type="text" v-model="form.health.medication" class="ios-input-fix" placeholder=""></div>
                         </div>
 
                         <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
@@ -655,7 +655,7 @@
                             <span v-if="record.data.totalCost" class="ml-auto text-xs text-[#8C7B66] font-normal border border-[#E6D2B5] px-1.5 rounded">${{ record.data.totalCost }}</span>
                         </p>
                         
-                        <p class="text-xs text-gray-500 mt-1" v-if="['deworming', 'bath', 'vaccine'].includes(record.data.subType) && record.data.brand">備註/名稱：{{ record.data.brand }}</p>
+                        <p class="text-xs text-gray-500 mt-1" v-if="['deworming', 'bath', 'vaccine'].includes(record.data.subType) && record.data.brand">{{ record.data.subType === 'vaccine' ? '疫苗名稱' : '備註' }}：{{ record.data.brand }}</p>
                         
                         <div v-if="record.data.subType === 'vaccine' && record.data.imageBase64" class="mt-2 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-100"><img :src="record.data.imageBase64" class="w-full h-full object-cover"></div>
 
