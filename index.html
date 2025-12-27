@@ -12,93 +12,48 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* 防止 Vue 尚未載入時出現的畫面閃爍 (v-cloak) */
         [v-cloak] { display: none !important; }
-
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #FFFDF5; color: #5D5D5D; -webkit-tap-highlight-color: transparent; }
         .cream-card { background-color: #FFFFFF; border: 1px solid #F0E6D2; box-shadow: 0 4px 10px -2px rgba(230, 210, 181, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
         .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid #D4C0A1; width: 20px; height: 20px; -webkit-animation: spin 1s linear infinite; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* 視覺設定 */
         .banner-img { object-position: center 40%; }
         .avatar-img { object-position: 0% 25%; }
         .empty-avatar-img { object-position: 0% 25%; }
         
-        /* iOS 輸入框優化 */
         .input-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #FAF7F0; 
-            border: 1px solid #EBE0D0;
-            border-radius: 0.75rem;
-            min-height: 3rem; /* 允許高度自適應 */
-            position: relative;
-            overflow: hidden; /* 確保內容不溢出 */
+            display: flex; align-items: center; justify-content: center;
+            background-color: #FAF7F0; border: 1px solid #EBE0D0;
+            border-radius: 0.75rem; min-height: 3rem; position: relative; overflow: hidden;
         }
-        
-        /* 隱藏原生輸入框文字，但保留點擊功能 */
-        .ios-input-hidden {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            z-index: 10;
-            cursor: pointer;
-        }
-
+        .ios-input-hidden { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; cursor: pointer; }
         .ios-input-fix {
-            background: transparent;
-            border: none;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            text-align-last: center;
-            font-size: 16px;
-            appearance: none;
-            -webkit-appearance: none;
-            padding: 0;
-            margin: 0;
-            padding-top: 4px; 
-            font-family: 'Noto Sans TC', sans-serif;
-            font-weight: 500;
-            color: #5D5D5D;
+            background: transparent; border: none; width: 100%; height: 100%;
+            text-align: center; text-align-last: center; font-size: 16px;
+            appearance: none; -webkit-appearance: none; padding: 0; margin: 0; padding-top: 4px; 
+            font-family: 'Noto Sans TC', sans-serif; font-weight: 500; color: #5D5D5D;
         }
-
-        /* 自訂顯示層 */
         .custom-display-layer {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none; /* 讓點擊穿透到 input */
-            z-index: 1;
-            font-family: 'Rubik', sans-serif; /* 用英文字體顯示數字比較好看 */
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; pointer-events: none; z-index: 1;
+            font-family: 'Rubik', sans-serif;
         }
-
-        /* Modal 動畫 */
         .modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
         .modal-enter-from, .modal-leave-to { opacity: 0; }
         .modal-enter-active .modal-content, .modal-leave-active .modal-content { transition: transform 0.3s ease; }
         .modal-enter-from .modal-content, .modal-leave-to .modal-content { transform: translateY(20px) scale(0.95); }
-
-        .stat-card {
-            background: linear-gradient(135deg, #ffffff 0%, #FFFDF5 100%);
-            border: 1px solid #F0E6D2;
-        }
+        .stat-card { background: linear-gradient(135deg, #ffffff 0%, #FFFDF5 100%); border: 1px solid #F0E6D2; }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -121,9 +76,7 @@
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">時間</label>
                             <div class="input-wrapper">
-                                <div class="custom-display-layer">
-                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.datetime).full }}</span>
-                                </div>
+                                <div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.datetime).full }}</span></div>
                                 <input type="datetime-local" v-model="editForm.data.datetime" class="ios-input-hidden">
                             </div>
                         </div>
@@ -131,15 +84,13 @@
                             <label class="flex-1 cursor-pointer group">
                                 <input type="radio" v-model="editForm.data.type" value="poop" class="hidden peer">
                                 <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition">
-                                    <div class="mb-1"><i class="fas fa-poop text-xl" :class="editForm.data.type === 'poop' ? 'text-white' : 'text-[#C0A062]'"></i></div>
-                                    <div class="text-xs">便便</div>
+                                    <div class="mb-1"><i class="fas fa-poop text-xl" :class="editForm.data.type === 'poop' ? 'text-white' : 'text-[#C0A062]'"></i></div><div class="text-xs">便便</div>
                                 </div>
                             </label>
                             <label class="flex-1 cursor-pointer group">
                                 <input type="radio" v-model="editForm.data.type" value="pee" class="hidden peer">
                                 <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white transition">
-                                    <div class="mb-1"><i class="fas fa-tint text-xl" :class="editForm.data.type === 'pee' ? 'text-white' : 'text-[#C0A062]'"></i></div>
-                                    <div class="text-xs">尿尿</div>
+                                    <div class="mb-1"><i class="fas fa-tint text-xl" :class="editForm.data.type === 'pee' ? 'text-white' : 'text-[#C0A062]'"></i></div><div class="text-xs">尿尿</div>
                                 </div>
                             </label>
                         </div>
@@ -149,36 +100,20 @@
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">放飯時間</label>
                             <div class="input-wrapper">
-                                <div class="custom-display-layer">
-                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.startTime).full }}</span>
-                                </div>
+                                <div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.startTime).full }}</span></div>
                                 <input type="datetime-local" v-model="editForm.data.startTime" class="ios-input-hidden">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">種類</label>
-                                <div class="input-wrapper"><select v-model="editForm.data.type" class="ios-input-fix"><option value="dry">乾糧</option><option value="wet">濕糧</option><option value="snack">點心</option></select></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">給予 (g)</label>
-                                <div class="input-wrapper"><input type="number" v-model.number="editForm.data.amountGiven" class="ios-input-fix"></div>
-                            </div>
+                            <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">種類</label><div class="input-wrapper"><select v-model="editForm.data.type" class="ios-input-fix"><option value="dry">乾糧</option><option value="wet">濕糧</option><option value="snack">點心</option></select></div></div>
+                            <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">給予 (g)</label><div class="input-wrapper"><input type="number" v-model.number="editForm.data.amountGiven" class="ios-input-fix"></div></div>
                         </div>
-                        <div class="mb-4">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">品牌</label>
-                             <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
-                        </div>
-                        <div class="mb-4" v-if="editForm.data.status === 'finished'">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">剩餘 (g)</label>
-                             <div class="input-wrapper"><input type="number" v-model.number="editForm.data.amountLeft" class="ios-input-fix"></div>
-                        </div>
+                        <div class="mb-4"><label class="block text-xs font-bold text-gray-400 uppercase mb-1">品牌</label><div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div></div>
+                        <div class="mb-4" v-if="editForm.data.status === 'finished'"><label class="block text-xs font-bold text-gray-400 uppercase mb-1">剩餘 (g)</label><div class="input-wrapper"><input type="number" v-model.number="editForm.data.amountLeft" class="ios-input-fix"></div></div>
                         <div v-if="editForm.data.status === 'finished'" class="mb-2">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">完食時間</label>
-                             <div class="input-wrapper">
-                                <div class="custom-display-layer">
-                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.endTime).full }}</span>
-                                </div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">完食時間</label>
+                            <div class="input-wrapper">
+                                <div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.endTime).full }}</span></div>
                                 <input type="datetime-local" v-model="editForm.data.endTime" class="ios-input-hidden">
                             </div>
                         </div>
@@ -188,52 +123,73 @@
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">日期</label>
                             <div class="input-wrapper">
-                                <div class="custom-display-layer">
-                                    <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.date).full }}</span>
-                                </div>
+                                <div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(editForm.data.date).full }}</span></div>
                                 <input type="date" v-model="editForm.data.date" class="ios-input-hidden">
                             </div>
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-2 mb-4">
-                            <label class="flex-1 cursor-pointer group">
-                                <input type="radio" v-model="editForm.data.subType" value="deworming" class="hidden peer">
-                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">驅蟲</div>
-                            </label>
-                            <label class="flex-1 cursor-pointer group">
-                                <input type="radio" v-model="editForm.data.subType" value="vaccine" class="hidden peer">
-                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">疫苗</div>
-                            </label>
-                            <label class="flex-1 cursor-pointer group">
-                                <input type="radio" v-model="editForm.data.subType" value="bath" class="hidden peer">
-                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">洗澡</div>
-                            </label>
-                            <label class="flex-1 cursor-pointer group">
-                                <input type="radio" v-model="editForm.data.subType" value="medical" class="hidden peer">
-                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">就醫</div>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <label v-for="type in ['deworming', 'vaccine', 'bath', 'medical', 'checkup']" :key="type" class="flex-1 min-w-[30%] cursor-pointer group">
+                                <input type="radio" v-model="editForm.data.subType" :value="type" class="hidden peer">
+                                <div class="py-2 text-center rounded-lg border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white text-xs transition">
+                                    {{ getHealthTypeLabel(type) }}
+                                </div>
                             </label>
                         </div>
 
-                        <div v-if="editForm.data.subType !== 'medical'" class="mb-4">
-                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label>
-                             <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
+                        <div v-if="['deworming', 'bath'].includes(editForm.data.subType)" class="mb-4">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label>
+                            <div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div>
                         </div>
 
-                        <div v-else class="space-y-3 mb-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">動物醫院</label>
-                                <div class="input-wrapper"><input type="text" v-model="editForm.data.hospital" class="ios-input-fix"></div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">醫囑</label>
-                                <div class="input-wrapper h-auto min-h-[4rem]">
-                                    <textarea v-model="editForm.data.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none"></textarea>
+                         <div v-if="editForm.data.subType === 'vaccine'" class="space-y-4 mb-4">
+                            <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">疫苗名稱/備註</label><div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div></div>
+                            <div class="relative">
+                                <input type="file" @change="(e) => handleImageCompress(e, 'edit')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
+                                <div v-if="!editForm.data.imageBase64" class="w-full h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50"><i class="fas fa-camera mb-1"></i><span class="text-[10px]">補傳照片</span></div>
+                                <div v-else class="w-full h-32 rounded-xl overflow-hidden bg-gray-100 relative shadow-inner">
+                                    <img :src="editForm.data.imageBase64" class="w-full h-full object-cover">
+                                    <button @click.stop="editForm.data.imageBase64 = null" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full z-20 flex items-center justify-center"><i class="fas fa-times text-xs"></i></button>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label>
-                                <div class="input-wrapper"><input type="text" v-model="editForm.data.notes" class="ios-input-fix"></div>
+                        </div>
+
+                        <div v-if="['medical', 'checkup'].includes(editForm.data.subType)" class="space-y-3 mb-4">
+                            <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">動物醫院</label><div class="input-wrapper"><input type="text" v-model="editForm.data.hospital" class="ios-input-fix"></div></div>
+                            
+                            <div v-if="editForm.data.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">體檢項目與結果</label>
+                                <div v-for="(item, idx) in editForm.data.checkupItems" :key="idx" class="flex gap-2 mb-2">
+                                    <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                    <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                    <button @click="editForm.data.checkupItems.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                                </div>
+                                <button @click="if(!editForm.data.checkupItems) editForm.data.checkupItems=[]; editForm.data.checkupItems.push({name:'', result:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增項目</button>
                             </div>
+
+                            <div v-if="editForm.data.subType === 'medical'">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">醫囑/診斷</label>
+                                <div class="input-wrapper h-auto min-h-[4rem]"><textarea v-model="editForm.data.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none"></textarea></div>
+                            </div>
+                            <div v-if="editForm.data.subType === 'medical'">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">開立藥物</label>
+                                <div class="input-wrapper"><input type="text" v-model="editForm.data.medication" class="ios-input-fix" placeholder=""></div>
+                            </div>
+
+                            <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-xs font-bold text-gray-400 uppercase">費用明細</label>
+                                    <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(editForm.data.billingDetails) }}</span>
+                                </div>
+                                <div v-for="(bill, idx) in editForm.data.billingDetails" :key="idx" class="flex gap-2 mb-2">
+                                    <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                    <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                    <button @click="editForm.data.billingDetails.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                                </div>
+                                <button @click="if(!editForm.data.billingDetails) editForm.data.billingDetails=[]; editForm.data.billingDetails.push({name:'', amount:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
+                            </div>
+
+                            <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">備註</label><div class="input-wrapper"><input type="text" v-model="editForm.data.notes" class="ios-input-fix"></div></div>
                         </div>
                     </div>
 
@@ -248,15 +204,25 @@
             <img src="./banner.jpg" onerror="this.style.display='none'" alt="小珍珠睡覺" class="w-full h-full object-cover banner-img opacity-95">
             <div class="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent"></div>
         </div>
-        <div class="pl-12 pr-6 -mt-16 flex items-end space-x-4 relative">
-            <div class="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-[#FFFDF5]">
+        <div class="pl-10 pr-6 -mt-14 flex items-end relative z-20">
+            <div class="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-[#FFFDF5] flex-shrink-0">
                 <img src="./avatar.jpg" alt="小珍珠" class="w-full h-full object-cover avatar-img">
             </div>
-            <div class="mb-2">
-                <h1 class="text-2xl font-bold tracking-wide text-gray-800">小珍珠</h1>
-                <p class="text-xs text-gray-500 mt-1 bg-white/60 px-2 py-1 rounded-full inline-block backdrop-blur-sm">
-                    <i class="fas fa-birthday-cake text-yellow-500 mr-1"></i>2025/6/28 <span class="mx-1 opacity-50">|</span> <i class="fas fa-heart text-red-400 mr-1"></i>Yvonne
-                </p>
+            
+            <div class="mb-1 ml-4 flex flex-col items-start">
+                <h1 class="text-2xl font-bold tracking-wide text-gray-800 mb-1">小珍珠</h1>
+                
+                <div class="text-[10px] text-gray-500 mb-1 flex items-center pl-1">
+                    <i class="fas fa-birthday-cake text-yellow-500 mr-1.5"></i>2025/6/28 
+                    <span class="mx-2 opacity-30">|</span> 
+                    <i class="fas fa-heart text-red-400 mr-1.5"></i>Yvonne
+                </div>
+
+                <button @click="copyChipId" class="text-[10px] text-gray-400 px-1 py-0.5 rounded inline-flex items-center active:bg-gray-50 transition group">
+                    <i class="fas fa-microchip mr-1.5 text-[#C0A062]"></i>
+                    <span class="font-mono tracking-wide">{{ settings.chipId || '900073001039569' }}</span>
+                    <i class="fas fa-copy ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -275,26 +241,37 @@
         
         <div v-if="currentTab === 'dashboard'" class="space-y-4 animate-fade-in">
             <div class="flex justify-between items-center mb-1 px-1">
-                <h2 class="text-lg font-bold text-[#8C7B66]">今日概況</h2>
+                <h2 class="text-lg font-bold text-[#8C7B66]">總覽</h2>
                 <span class="text-xs text-gray-400 bg-white px-2 py-1 rounded-full border border-gray-100">{{ getCurrentDateDisplay() }}</span>
             </div>
 
             <div class="relative overflow-hidden rounded-2xl shadow-sm border border-[#FFE082] bg-gradient-to-r from-[#FFFDE7] via-[#FFF8E1] to-[#FFFDE7] p-4 transition-transform hover:scale-[1.01]">
-                <div class="absolute -right-2 -top-2 text-6xl opacity-20 rotate-12 text-[#FFB300]">
-                    <i class="fas fa-heart"></i>
-                </div>
-                
+                <div class="absolute -right-2 -top-2 text-6xl opacity-20 rotate-12 text-[#FFB300]"><i class="fas fa-heart"></i></div>
                 <div class="flex items-center relative z-10">
-                    <div class="text-4xl text-[#C0A062] mr-4 drop-shadow-sm">
-                        <i class="fas fa-paw"></i>
-                    </div>
-                    
+                    <div class="text-4xl text-[#C0A062] mr-4 drop-shadow-sm"><i class="fas fa-paw"></i></div>
                     <div>
-                        <div class="text-[10px] font-bold text-[#F9A825] tracking-wider mb-0.5 uppercase flex items-center">
-                            <i class="fas fa-star"></i> 小寶貝養成中
+                        <div class="text-[10px] font-bold text-[#F9A825] tracking-wider mb-0.5 uppercase flex items-center"><i class="fas fa-star"></i> 小寶貝養成中</div>
+                        <div class="text-lg text-[#8C7B66] tracking-wide font-medium font-sans">{{ ageDisplay }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="settings.allergies && (settings.allergies.confirmed.length > 0 || settings.allergies.suspected.length > 0)" class="bg-white rounded-2xl p-4 shadow-sm border border-red-100 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-12 h-12 bg-red-50 rounded-bl-3xl"></div>
+                <h3 class="text-sm font-bold text-gray-700 mb-2 flex items-center relative z-10">
+                    <i class="fas fa-shield-virus text-red-400 mr-2"></i>過敏原警示
+                </h3>
+                <div class="space-y-2 relative z-10">
+                    <div v-if="settings.allergies.confirmed.length > 0" class="flex items-start">
+                        <span class="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded mr-2 shrink-0 font-bold mt-0.5">確定</span>
+                        <div class="flex flex-wrap gap-1">
+                            <span v-for="item in settings.allergies.confirmed" :key="item" class="text-xs text-gray-600 border border-red-100 px-2 py-0.5 rounded-full">{{ item }}</span>
                         </div>
-                        <div class="text-lg text-[#8C7B66] tracking-wide font-medium font-sans">
-                            {{ ageDisplay }}
+                    </div>
+                    <div v-if="settings.allergies.suspected.length > 0" class="flex items-start">
+                        <span class="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded mr-2 shrink-0 font-bold mt-0.5">疑似</span>
+                        <div class="flex flex-wrap gap-1">
+                            <span v-for="item in settings.allergies.suspected" :key="item" class="text-xs text-gray-500 border border-orange-100 px-2 py-0.5 rounded-full">{{ item }}</span>
                         </div>
                     </div>
                 </div>
@@ -302,100 +279,76 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="stat-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm">
-                    <div class="mb-2">
-                        <i class="fas fa-poop text-3xl text-[#C0A062]"></i>
-                    </div>
+                    <div class="mb-2"><i class="fas fa-poop text-3xl text-[#C0A062]"></i></div>
                     <div class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">便便次數</div>
                     <div class="text-2xl font-bold text-gray-700">{{ todayStats.poopCount }} <span class="text-xs font-normal text-gray-400">次</span></div>
                 </div>
-                
                 <div class="stat-card p-4 rounded-2xl flex flex-col items-center justify-center shadow-sm">
-                    <div class="mb-2">
-                        <i class="fas fa-tint text-3xl text-[#C0A062]"></i>
-                    </div>
+                    <div class="mb-2"><i class="fas fa-tint text-3xl text-[#C0A062]"></i></div>
                     <div class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">尿尿次數</div>
                     <div class="text-2xl font-bold text-gray-700">{{ todayStats.peeCount }} <span class="text-xs font-normal text-gray-400">次</span></div>
                 </div>
-                
                 <div class="stat-card p-4 rounded-2xl col-span-2 shadow-sm">
                     <div class="flex items-center justify-between mb-3 px-1">
                         <div>
                             <div class="text-xs text-gray-400 uppercase font-bold tracking-wider mb-0.5">今日進食總量</div>
                             <div class="text-3xl font-bold text-[#8C7B66]">{{ todayStats.foodDetails.total.toFixed(1) }} <span class="text-sm font-normal text-gray-400">g</span></div>
                         </div>
-                        <div class="w-10 h-10 rounded-full bg-[#E6D2B5]/20 text-[#8C7B66] flex items-center justify-center text-lg">
-                            <i class="fas fa-utensils"></i>
-                        </div>
+                        <div class="w-10 h-10 rounded-full bg-[#E6D2B5]/20 text-[#8C7B66] flex items-center justify-center text-lg"><i class="fas fa-utensils"></i></div>
                     </div>
-                    
                     <div class="h-px bg-gray-100 w-full mb-3"></div>
-                    
                     <div class="grid grid-cols-3 gap-2 text-center">
-                        <div>
-                            <div class="text-[10px] text-gray-400 mb-1">乾糧</div>
-                            <div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.dry.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div>
-                        </div>
-                        <div class="border-l border-gray-100">
-                            <div class="text-[10px] text-gray-400 mb-1">濕糧</div>
-                            <div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.wet.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div>
-                        </div>
-                        <div class="border-l border-gray-100">
-                            <div class="text-[10px] text-gray-400 mb-1">點心</div>
-                            <div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.snack.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div>
-                        </div>
+                        <div><div class="text-[10px] text-gray-400 mb-1">乾糧</div><div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.dry.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div></div>
+                        <div class="border-l border-gray-100"><div class="text-[10px] text-gray-400 mb-1">濕糧</div><div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.wet.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div></div>
+                        <div class="border-l border-gray-100"><div class="text-[10px] text-gray-400 mb-1">點心</div><div class="font-bold text-gray-600 text-sm">{{ todayStats.foodDetails.snack.toFixed(1) }} <span class="text-[10px] font-normal">g</span></div></div>
                     </div>
                 </div>
             </div>
-
-            <div v-if="activeMeal" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center space-x-3 animate-pulse">
+            
+            <div v-if="activeMeal" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center space-x-3 animate-pulse cursor-pointer" @click="currentTab='food'">
                 <i class="fas fa-exclamation-circle text-yellow-500"></i>
                 <div class="flex-1">
                     <p class="text-sm font-bold text-yellow-800">正在用餐中</p>
                     <p class="text-xs text-yellow-600">記得去「用餐」分頁收碗喔！</p>
                 </div>
-                <button @click="currentTab='food'" class="px-3 py-1 bg-yellow-400 text-white text-xs rounded-full font-bold">前往</button>
             </div>
-            
+
+            <div class="cream-card p-4 rounded-2xl mt-4">
+                <h3 class="text-sm font-bold text-[#8C7B66] mb-3 ml-1">過去 7 天進食趨勢</h3>
+                <div class="h-48 w-full">
+                    <canvas id="foodChart"></canvas>
+                </div>
+            </div>
         </div>
 
         <div v-if="currentTab === 'excretion'" class="space-y-4 animate-fade-in">
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-poop mr-2"></i>便溺記錄</h2>
-                
                 <div class="mb-5">
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">時間</label>
                     <div class="input-wrapper">
-                        <div class="custom-display-layer">
-                            <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.excretion.datetime).full }}</span>
-                        </div>
+                        <div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.excretion.datetime).full }}</span></div>
                         <input type="datetime-local" v-model="form.excretion.datetime" class="ios-input-hidden">
                     </div>
                 </div>
-
                 <div class="flex space-x-4 mb-5">
                     <label class="flex-1 cursor-pointer group">
                         <input type="radio" v-model="form.excretion.type" value="poop" class="hidden peer">
                         <div class="py-4 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all">
-                            <div class="mb-2">
-                                <i class="fas fa-poop text-3xl" :class="form.excretion.type === 'poop' ? 'text-white' : 'text-[#C0A062]'"></i>
-                            </div>
-                            <div class="text-sm">便便</div>
+                            <div class="mb-2"><i class="fas fa-poop text-3xl" :class="form.excretion.type === 'poop' ? 'text-white' : 'text-[#C0A062]'"></i></div><div class="text-sm">便便</div>
                         </div>
                     </label>
                     <label class="flex-1 cursor-pointer group">
                         <input type="radio" v-model="form.excretion.type" value="pee" class="hidden peer">
                         <div class="py-4 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all">
-                            <div class="mb-2">
-                                <i class="fas fa-tint text-3xl" :class="form.excretion.type === 'pee' ? 'text-white' : 'text-[#C0A062]'"></i>
-                            </div>
-                            <div class="text-sm">尿尿</div>
+                            <div class="mb-2"><i class="fas fa-tint text-3xl" :class="form.excretion.type === 'pee' ? 'text-white' : 'text-[#C0A062]'"></i></div><div class="text-sm">尿尿</div>
                         </div>
                     </label>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片 (自動壓縮)</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片</label>
                     <div class="relative">
-                        <input type="file" @change="handleImageCompress" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
+                        <input type="file" @change="(e) => handleImageCompress(e, 'excretion')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
                         <div v-if="!form.excretion.imageBase64" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
                             <i class="fas fa-camera text-2xl mb-2"></i><span class="text-xs">點擊選擇照片</span>
                         </div>
@@ -418,57 +371,21 @@
                 <hr class="border-dashed border-gray-200 my-4">
                 <h4 class="text-sm font-bold text-gray-600 mb-3 text-center">我要收碗 (記錄剩餘)</h4>
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="h-full">
-                        <label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間</label>
-                        <div class="input-wrapper h-14">
-                            <div class="custom-display-layer">
-                                <div class="text-xl text-gray-700 tracking-wider">
-                                    {{ getFormattedDisplay(form.leftover.datetime).time }}
-                                </div>
-                            </div>
-                            <input type="datetime-local" v-model="form.leftover.datetime" class="ios-input-hidden">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-400 mb-1 text-center">剩餘 (g)</label>
-                        <div class="input-wrapper h-14">
-                            <input type="number" v-model.number="form.leftover.amount" class="ios-input-fix text-lg font-bold" placeholder="0" style="padding-top:0">
-                        </div>
-                    </div>
+                    <div class="h-full"><label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間</label><div class="input-wrapper h-14"><div class="custom-display-layer"><div class="text-xl text-gray-700 tracking-wider">{{ getFormattedDisplay(form.leftover.datetime).time }}</div></div><input type="datetime-local" v-model="form.leftover.datetime" class="ios-input-hidden"></div></div>
+                    <div><label class="block text-[10px] text-gray-400 mb-1 text-center">剩餘 (g)</label><div class="input-wrapper h-14"><input type="number" v-model.number="form.leftover.amount" class="ios-input-fix text-lg font-bold" placeholder="0" style="padding-top:0"></div></div>
                 </div>
                 <button @click="submitLeftover" class="w-full py-3 bg-[#8C7B66] text-white rounded-xl shadow-md hover:bg-[#7A6A56] transition">完成用餐</button>
             </div>
 
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-4 text-[#8C7B66] flex items-center justify-between"><span><i class="fas fa-utensils mr-2"></i>我要放飯</span></h2>
-                
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">放飯時間</label>
-                    <div class="input-wrapper">
-                        <div class="custom-display-layer">
-                            <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.food.datetime).full }}</span>
-                        </div>
-                        <input type="datetime-local" v-model="form.food.datetime" class="ios-input-hidden">
-                    </div>
-                </div>
-
+                <div class="mb-4"><label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">放飯時間</label><div class="input-wrapper"><div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.food.datetime).full }}</span></div><input type="datetime-local" v-model="form.food.datetime" class="ios-input-hidden"></div></div>
                 <div class="flex space-x-2 mb-4 overflow-x-auto no-scrollbar pb-1 justify-center">
                     <button v-for="type in ['dry', 'wet', 'snack']" @click="form.food.type = type" :class="['flex-1 px-4 py-2 rounded-lg text-sm border transition-all whitespace-nowrap', form.food.type === type ? 'bg-[#E6D2B5] border-[#E6D2B5] text-white shadow-sm' : 'border-gray-200 text-gray-400 bg-white']">{{ foodTypeLabels[type] }}</button>
                 </div>
                 <div class="grid grid-cols-3 gap-3 mb-4">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">品牌</label>
-                        <div class="flex space-x-1 input-wrapper px-2">
-                            <select v-model="form.food.brand" class="ios-input-fix text-left" style="padding-top:0"><option v-for="opt in getFoodOptions(form.food.type)" :value="opt">{{ opt }}</option></select>
-                            <button @click="addFoodOption" class="px-2 text-gray-400">+</button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">給予 (g)</label>
-                        <div class="input-wrapper">
-                            <input type="number" v-model.number="form.food.amountGiven" class="ios-input-fix font-bold text-lg" style="padding-top:0">
-                        </div>
-                    </div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">品牌</label><div class="flex space-x-1 input-wrapper px-2"><select v-model="form.food.brand" class="ios-input-fix text-left" style="padding-top:0"><option v-for="opt in getFoodOptions(form.food.type)" :value="opt">{{ opt }}</option></select><button @click="addFoodOption" class="px-2 text-gray-400">+</button></div></div>
+                    <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">給予 (g)</label><div class="input-wrapper"><input type="number" v-model.number="form.food.amountGiven" class="ios-input-fix font-bold text-lg" style="padding-top:0"></div></div>
                 </div>
                 <div v-if="form.food.type !== 'snack'" class="mb-6 bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
                     <div class="flex justify-between items-center mb-2"><label class="text-xs font-bold text-gray-500">添加保健品</label><button @click="addSupplementOption" class="text-[10px] text-[#A68A64] border border-[#A68A64] px-1.5 rounded">+ 新增</button></div>
@@ -486,36 +403,12 @@
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-5 text-[#8C7B66] flex items-center"><i class="fas fa-heartbeat mr-2"></i>健康護理</h2>
                 
-                <div class="mb-5">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">日期</label>
-                    <div class="input-wrapper">
-                        <div class="custom-display-layer">
-                            <span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.health.date).full }}</span>
-                        </div>
-                        <input type="date" v-model="form.health.date" class="ios-input-hidden">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 mb-5">
-                    <label class="cursor-pointer group">
-                        <input type="radio" v-model="form.health.subType" value="deworming" class="hidden peer">
+                <div class="grid grid-cols-3 gap-2 mb-5">
+                    <label v-for="type in ['deworming', 'vaccine', 'bath']" :key="type" class="cursor-pointer group">
+                        <input type="radio" v-model="form.health.subType" :value="type" class="hidden peer">
                         <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
-                            <i class="fas fa-capsules mb-1 text-lg"></i>
-                            <div class="text-xs">驅蟲</div>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" v-model="form.health.subType" value="vaccine" class="hidden peer">
-                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
-                            <i class="fas fa-syringe mb-1 text-lg"></i>
-                            <div class="text-xs">疫苗</div>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer group">
-                        <input type="radio" v-model="form.health.subType" value="bath" class="hidden peer">
-                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
-                            <i class="fas fa-bath mb-1 text-lg"></i>
-                            <div class="text-xs">洗澡</div>
+                            <i class="fas mb-1 text-lg" :class="{'fa-capsules': type==='deworming', 'fa-syringe': type==='vaccine', 'fa-bath': type==='bath'}"></i>
+                            <div class="text-xs">{{ getHealthTypeLabel(type) }}</div>
                         </div>
                     </label>
                     <label class="cursor-pointer group">
@@ -525,47 +418,132 @@
                             <div class="text-xs">就醫</div>
                         </div>
                     </label>
+                    <label class="cursor-pointer group">
+                        <input type="radio" v-model="form.health.subType" value="checkup" class="hidden peer">
+                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-file-medical mb-1 text-lg"></i>
+                            <div class="text-xs">體檢</div>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer group">
+                        <input type="radio" v-model="form.health.subType" value="allergy" class="hidden peer">
+                        <div class="py-3 text-center rounded-xl border border-gray-200 peer-checked:bg-[#E6D2B5] peer-checked:text-white peer-checked:border-[#E6D2B5] transition-all flex flex-col items-center justify-center h-full">
+                            <i class="fas fa-shield-virus mb-1 text-lg"></i>
+                            <div class="text-xs">過敏原</div>
+                        </div>
+                    </label>
                 </div>
 
-                <div v-if="form.health.subType !== 'medical'" class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註</label>
+                <div v-if="form.health.subType !== 'allergy'" class="mb-5">
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">日期</label>
                     <div class="input-wrapper">
-                        <input type="text" v-model="form.health.brand" :placeholder="getHealthPlaceholder()" class="ios-input-fix" style="padding-top:0">
+                        <div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.health.date).full }}</span></div>
+                        <input type="date" v-model="form.health.date" class="ios-input-hidden">
                     </div>
                 </div>
 
-                <div v-else class="space-y-4 mb-6">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">動物醫院</label>
-                        <div class="input-wrapper">
-                            <input type="text" v-model="form.health.hospital" class="ios-input-fix" style="padding-top:0">
+                <div v-if="form.health.subType === 'allergy'" class="space-y-6">
+                    <div class="p-4 bg-orange-50 border border-orange-100 rounded-xl">
+                        <h3 class="text-sm font-bold text-orange-800 mb-3"><i class="fas fa-question-circle mr-1"></i>疑似過敏 (Suspected)</h3>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span v-for="(item, idx) in settings.allergies.suspected" :key="idx" class="bg-white border border-orange-200 text-orange-600 px-3 py-1 rounded-full text-xs flex items-center">
+                                {{ item }}
+                                <button @click="deleteAllergy('suspected', idx)" class="ml-2 text-orange-300 hover:text-orange-500"><i class="fas fa-times"></i></button>
+                            </span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" v-model="tempAllergyInput.suspected" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-300">
+                            <button @click="addAllergy('suspected')" class="bg-orange-400 text-white px-3 py-1 rounded-lg text-sm shadow-sm">新增</button>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑</label>
-                        <div class="input-wrapper" style="height: auto; min-height: 5rem;">
-                            <textarea v-model="form.health.orders" class="ios-input-fix" style="height: 5rem; padding-top: 10px; resize: none; text-align: left; padding-left: 1rem; padding-right: 1rem;"></textarea>
+
+                    <div class="p-4 bg-red-50 border border-red-100 rounded-xl">
+                        <h3 class="text-sm font-bold text-red-800 mb-3"><i class="fas fa-exclamation-triangle mr-1"></i>確定過敏 (Confirmed)</h3>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span v-for="(item, idx) in settings.allergies.confirmed" :key="idx" class="bg-white border border-red-200 text-red-600 px-3 py-1 rounded-full text-xs flex items-center">
+                                {{ item }}
+                                <button @click="deleteAllergy('confirmed', idx)" class="ml-2 text-red-300 hover:text-red-500"><i class="fas fa-times"></i></button>
+                            </span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" v-model="tempAllergyInput.confirmed" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-red-300">
+                            <button @click="addAllergy('confirmed')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm shadow-sm">新增</button>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">備註</label>
-                        <div class="input-wrapper">
-                            <input type="text" v-model="form.health.notes" class="ios-input-fix" style="padding-top:0">
-                        </div>
-                    </div>
+
+                    <button @click="saveAllergies" class="w-full py-3 bg-[#E6D2B5] text-white rounded-xl shadow-md hover:bg-[#D4C0A1] transition font-bold mt-2">更新過敏原設定</button>
                 </div>
-                
-                <button @click="submitHealth" class="w-full py-3.5 bg-[#5D5D5D] text-white rounded-xl shadow-lg hover:bg-[#4A4A4A] transition font-medium">儲存記錄</button>
+
+                <div v-else>
+                    <div v-if="['deworming', 'bath'].includes(form.health.subType)" class="mb-6">
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註</label>
+                        <div class="input-wrapper"><input type="text" v-model="form.health.brand" class="ios-input-fix" style="padding-top:0"></div>
+                    </div>
+
+                    <div v-if="form.health.subType === 'vaccine'" class="mb-6 space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">疫苗名稱</label>
+                            <div class="input-wrapper"><input type="text" v-model="form.health.brand" class="ios-input-fix" style="padding-top:0"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片</label>
+                            <div class="relative">
+                                <input type="file" @change="(e) => handleImageCompress(e, 'health')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
+                                <div v-if="!form.health.imageBase64" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50"><i class="fas fa-camera text-2xl mb-2"></i><span class="text-xs">拍攝/上傳</span></div>
+                                <div v-else class="w-full h-48 rounded-xl overflow-hidden bg-gray-100 relative shadow-inner">
+                                    <img :src="form.health.imageBase64" class="w-full h-full object-cover">
+                                    <button @click.stop="form.health.imageBase64 = null" class="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-full z-20"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="['medical', 'checkup'].includes(form.health.subType)" class="space-y-4 mb-6">
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">動物醫院</label><div class="input-wrapper"><input type="text" v-model="form.health.hospital" class="ios-input-fix" style="padding-top:0"></div></div>
+                        
+                        <div v-if="form.health.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">體檢項目與結果</label>
+                            <div v-for="(item, idx) in form.health.checkupItems" :key="idx" class="flex gap-2 mb-2">
+                                <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                <button @click="form.health.checkupItems.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                            </div>
+                            <button @click="form.health.checkupItems.push({name:'', result:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增體檢項目</button>
+                        </div>
+
+                        <div v-if="form.health.subType === 'medical'">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑/診斷</label>
+                            <div class="input-wrapper" style="height: auto; min-height: 5rem;"><textarea v-model="form.health.orders" class="ios-input-fix" style="height: 5rem; padding-top: 10px; resize: none; text-align: left; padding-left: 1rem; padding-right: 1rem;"></textarea></div>
+                        </div>
+                        <div v-if="form.health.subType === 'medical'">
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">開立藥物</label>
+                            <div class="input-wrapper"><input type="text" v-model="form.health.medication" class="ios-input-fix" placeholder="" style="padding-top:0"></div>
+                        </div>
+
+                        <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase">費用明細</label>
+                                <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(form.health.billingDetails) }}</span>
+                            </div>
+                            <div v-for="(bill, idx) in form.health.billingDetails" :key="idx" class="flex gap-2 mb-2">
+                                <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
+                                <button @click="form.health.billingDetails.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                            </div>
+                            <button @click="form.health.billingDetails.push({name:'', amount:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
+                        </div>
+
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">備註</label><div class="input-wrapper"><input type="text" v-model="form.health.notes" class="ios-input-fix" style="padding-top:0"></div></div>
+                    </div>
+                    
+                    <button @click="submitHealth" class="w-full py-3.5 bg-[#5D5D5D] text-white rounded-xl shadow-lg hover:bg-[#4A4A4A] transition font-medium">儲存記錄</button>
+                </div>
             </div>
         </div>
 
         <div v-if="currentTab === 'history'" class="space-y-4 animate-fade-in pb-12">
-            
             <div class="mt-2 mb-2 space-y-2">
-                <button @click="backupData" class="w-full py-2 bg-white border border-stone-200 text-stone-400 rounded-xl shadow-sm text-xs flex items-center justify-center space-x-2 active:scale-95 transition hover:bg-stone-50">
-                    <i class="fas fa-download"></i>
-                    <span>Download Backup</span>
-                </button>
+                <button @click="backupData" class="w-full py-2 bg-white border border-stone-200 text-stone-400 rounded-xl shadow-sm text-xs flex items-center justify-center space-x-2 active:scale-95 transition hover:bg-stone-50"><i class="fas fa-download"></i><span>Download Backup</span></button>
             </div>
             <div class="sticky top-[76px] z-30 bg-[#FFFDF5]/95 backdrop-blur-sm pt-2 pb-4 -mx-5 px-5 border-b border-stone-100">
                 <div class="flex space-x-2 overflow-x-auto no-scrollbar mb-3">
@@ -574,13 +552,19 @@
                     <button @click="filterCategory = 'food'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'food' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">用餐</button>
                     <button @click="filterCategory = 'health'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'health' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">健康</button>
                 </div>
+                
+                <div v-if="filterCategory === 'health'" class="flex space-x-2 overflow-x-auto no-scrollbar mb-3 animate-fade-in">
+                    <button @click="filterHealthSubType = 'all'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'all' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">全部</button>
+                    <button @click="filterHealthSubType = 'deworming'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'deworming' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">驅蟲</button>
+                    <button @click="filterHealthSubType = 'vaccine'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'vaccine' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">疫苗</button>
+                    <button @click="filterHealthSubType = 'bath'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'bath' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">洗澡</button>
+                    <button @click="filterHealthSubType = 'medical'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'medical' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">就醫</button>
+                    <button @click="filterHealthSubType = 'checkup'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'checkup' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">體檢</button>
+                </div>
+
                 <div class="input-wrapper h-10">
                     <div class="relative flex-1 h-full">
-                        <div class="custom-display-layer">
-                            <span class="text-base text-gray-600 tracking-wide">
-                                {{ filterDate ? getFormattedDisplay(filterDate).full : '' }}
-                            </span>
-                        </div>
+                        <div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ filterDate ? getFormattedDisplay(filterDate).full : '' }}</span></div>
                         <input type="date" v-model="filterDate" class="ios-input-hidden">
                     </div>
                     <button v-if="filterDate" @click="filterDate = ''" class="ml-1 text-gray-400 px-3 z-20 flex items-center justify-center h-full"><i class="fas fa-times-circle"></i></button>
@@ -588,17 +572,12 @@
             </div>
 
             <div v-if="filteredRecords.length === 0 && !isLoading" class="text-center py-12 opacity-50">
-                <img src="./record.JPG" class="w-20 h-20 rounded-full mx-auto mb-3 opacity-50 grayscale object-cover empty-avatar-img">
-                <p class="text-gray-400">尚無符合的記錄</p>
+                <img src="./record.JPG" class="w-20 h-20 rounded-full mx-auto mb-3 opacity-50 grayscale object-cover empty-avatar-img"><p class="text-gray-400">尚無符合的記錄</p>
             </div>
 
             <div v-for="record in filteredRecords" :key="record.id" class="cream-card p-4 rounded-xl flex items-start space-x-3 relative transition-transform active:scale-[0.99]">
                 <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-1" 
-                     :class="{
-                        'bg-[#FFF8E1] text-[#C0A062]': record.category === 'excretion', 
-                        'bg-orange-50 text-orange-600': record.category === 'food', 
-                        'bg-blue-50 text-blue-600': record.category === 'meds' || record.category === 'health'
-                     }">
+                     :class="{'bg-[#FFF8E1] text-[#C0A062]': record.category === 'excretion', 'bg-orange-50 text-orange-600': record.category === 'food', 'bg-blue-50 text-blue-600': record.category === 'meds' || record.category === 'health'}">
                     <i class="fas" :class="getRecordIcon(record)"></i>
                 </div>
 
@@ -618,43 +597,62 @@
                     
                     <div v-if="record.category === 'food'">
                         <div class="flex justify-between items-start"> 
-                            <p class="font-bold text-gray-700 text-sm flex-1 pr-2 leading-relaxed">
-                                {{ foodTypeLabels[record.data.type] }} 
-                                <span class="font-normal text-gray-500 ml-1 break-words">{{ record.data.brand }}</span>
-                            </p>
+                            <p class="font-bold text-gray-700 text-sm flex-1 pr-2 leading-relaxed">{{ foodTypeLabels[record.data.type] }} <span class="font-normal text-gray-500 ml-1 break-words">{{ record.data.brand }}</span></p>
                             <span v-if="record.data.status === 'eating'" class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full animate-pulse whitespace-nowrap shrink-0 mt-0.5">用餐中</span>
                             <span v-else class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 mt-0.5">已完食</span>
                         </div>
-                        
                         <div class="mt-2 text-sm text-gray-600 bg-[#FAF7F0] p-2 rounded-lg text-xs leading-relaxed">
                             <div class="text-[10px] text-gray-400 mb-1 border-b border-gray-200 pb-1 flex justify-between"><span><i class="far fa-clock"></i> {{ formatTime(record.data.startTime) }} 放飯</span><span v-if="record.data.endTime"> ➔ {{ formatTime(record.data.endTime) }} 收碗</span></div>
                             <div class="flex justify-between mt-1"><span>給予：{{ record.data.amountGiven }}g</span><span v-if="record.data.endTime">剩餘：{{ record.data.amountLeft }}g</span><span v-else class="text-gray-400 italic">尚未收碗</span></div>
-                            
                             <div v-if="record.data.endTime" class="mt-1 pt-1 border-t border-gray-200 font-bold text-[#A68A64]">共吃下：{{ (record.data.amountGiven - record.data.amountLeft).toFixed(1) }}g</div>
-                        
                         </div>
                         <div v-if="record.data.supplements?.length > 0" class="flex gap-1 mt-2 flex-wrap"><span v-for="s in record.data.supplements" class="text-[10px] border border-gray-200 text-gray-400 px-2 py-0.5 rounded-full">{{ s }}</span></div>
                         <div v-if="record.data.status === 'eating'" class="mt-2"><button @click="quickFinish(record.id)" class="text-xs w-full py-1 bg-[#E6D2B5] text-white rounded">補按收碗 (設為剩 0g)</button></div>
                     </div>
                     
                     <div v-if="record.category === 'meds' || record.category === 'health'">
-                        <p class="font-bold text-gray-700 text-sm">
-                            {{ getHealthTitle(record) }}
+                        <p class="font-bold text-gray-700 text-sm flex items-center">
+                            {{ getHealthTypeLabel(record.data.subType || 'meds') }}
+                            <span v-if="record.data.totalCost" class="ml-auto text-xs text-[#8C7B66] font-normal border border-[#E6D2B5] px-1.5 rounded">${{ record.data.totalCost }}</span>
                         </p>
-                        <p class="text-xs text-gray-500 mt-1" v-if="record.data.subType !== 'medical' && record.data.brand">備註：{{ record.data.brand }}</p>
                         
-                        <div v-if="record.data.subType === 'medical'" class="mt-2 text-xs bg-[#FAF7F0] p-3 rounded-lg space-y-2">
+                        <p class="text-xs text-gray-500 mt-1" v-if="['deworming', 'bath', 'vaccine'].includes(record.data.subType) && record.data.brand">備註/名稱：{{ record.data.brand }}</p>
+                        
+                        <div v-if="record.data.subType === 'vaccine' && record.data.imageBase64" class="mt-2 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 border border-gray-100"><img :src="record.data.imageBase64" class="w-full h-full object-cover"></div>
+
+                        <div v-if="['medical', 'checkup'].includes(record.data.subType)" class="mt-2 text-xs bg-[#FAF7F0] p-3 rounded-lg space-y-2">
                             <div v-if="record.data.hospital" class="flex items-start text-gray-600">
                                 <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-hospital-alt"></i></div>
-                                <div class="flex-1 leading-relaxed">{{ record.data.hospital }}</div>
+                                <div class="flex-1 font-bold">{{ record.data.hospital }}</div>
                             </div>
                             
+                            <div v-if="record.data.checkupItems && record.data.checkupItems.length" class="border-t border-gray-200 pt-2">
+                                <div class="text-[10px] text-gray-400 mb-1">體檢結果</div>
+                                <div v-for="item in record.data.checkupItems" class="flex justify-between mb-0.5">
+                                    <span class="text-gray-600">{{ item.name }}</span>
+                                    <span class="font-medium text-gray-800">{{ item.result }}</span>
+                                </div>
+                            </div>
+
                             <div v-if="record.data.orders" class="flex items-start text-gray-700 font-medium border-t border-gray-200 pt-2">
                                 <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-user-md"></i></div>
                                 <div class="flex-1 leading-relaxed whitespace-pre-wrap">{{ record.data.orders }}</div>
                             </div>
+
+                            <div v-if="record.data.medication" class="flex items-start text-gray-600 border-t border-gray-200 pt-2">
+                                <div class="w-5 shrink-0 text-[#C0A062] mt-0.5"><i class="fas fa-pills"></i></div>
+                                <div class="flex-1">{{ record.data.medication }}</div>
+                            </div>
                             
-                            <div v-if="record.data.notes" class="text-gray-400 pl-5 leading-relaxed whitespace-pre-wrap">
+                            <div v-if="record.data.billingDetails && record.data.billingDetails.length" class="border-t border-gray-200 pt-2">
+                                <div class="text-[10px] text-gray-400 mb-1">費用明細</div>
+                                <div v-for="bill in record.data.billingDetails" class="flex justify-between mb-0.5 text-gray-500">
+                                    <span>{{ bill.name }}</span>
+                                    <span>${{ bill.amount }}</span>
+                                </div>
+                            </div>
+
+                            <div v-if="record.data.notes" class="text-gray-400 pt-1 leading-relaxed whitespace-pre-wrap text-[10px] border-t border-gray-200">
                                 備註：{{ record.data.notes }}
                             </div>
                         </div>
@@ -669,7 +667,7 @@
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; 
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, query, orderBy, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, setDoc, getDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDG2mRZslEFj8-l9on8lZDh2YisuJGoNdk",
@@ -685,18 +683,16 @@
     const db = getFirestore(app);
     const auth = getAuth(app); 
 
-    // --- 核心時區處理 (強制台灣時間 UTC+8) ---
     const getTaiwanDate = () => {
         const d = new Date();
         const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
         return new Date(utc + (3600000 * 8)); 
     };
 
-    const getTaiwanDateStr = () => {
-        const tw = getTaiwanDate();
-        const year = tw.getFullYear();
-        const month = String(tw.getMonth() + 1).padStart(2, '0');
-        const day = String(tw.getDate()).padStart(2, '0');
+    const getTaiwanDateStr = (dateObj = getTaiwanDate()) => {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     };
 
@@ -710,12 +706,10 @@
         return `${year}-${month}-${day}T${hour}:${minute}`;
     };
 
-    // 將 UTC 字串轉換為 台灣時間字串
     const convertUtcToTwString = (isoStr) => {
         if (!isoStr || !isoStr.endsWith('Z')) return isoStr; 
         const dateObj = new Date(isoStr);
         const twTime = new Date(dateObj.getTime() + (480 + dateObj.getTimezoneOffset()) * 60000);
-        
         const year = twTime.getFullYear();
         const month = String(twTime.getMonth() + 1).padStart(2, '0');
         const day = String(twTime.getDate()).padStart(2, '0');
@@ -730,26 +724,24 @@
                 isLoading: true,
                 currentTab: 'dashboard', 
                 tabs: [ 
-                    { id: 'dashboard', name: '今日', icon: 'fa-chart-pie' },
+                    { id: 'dashboard', name: '總覽', icon: 'fa-chart-pie' },
                     { id: 'excretion', name: '便溺', icon: 'fa-poop' }, 
                     { id: 'food', name: '用餐', icon: 'fa-utensils' }, 
                     { id: 'health', name: '健康', icon: 'fa-heartbeat' }, 
                     { id: 'history', name: '記錄', icon: 'fa-history' } 
                 ],
                 foodTypeLabels: { dry: '乾糧', wet: '濕糧', snack: '點心' },
-                
                 settings: { 
-                    dryOptions: ['皇家 K36'], 
-                    wetOptions: ['皇家 K36'], 
-                    snackOptions: ['REGAL'], 
-                    supplements: ['離胺酸', '牛磺酸', '排毛粉'] 
+                    chipId: '900073001039569',
+                    dryOptions: ['皇家 K36'], wetOptions: ['皇家 K36'], snackOptions: ['REGAL'], supplements: ['離胺酸', '牛磺酸', '排毛粉'],
+                    allergies: { suspected: [], confirmed: [] } 
                 },
-                
+                tempAllergyInput: { suspected: '', confirmed: '' },
                 filterDate: '',
                 filterCategory: 'all',
+                filterHealthSubType: 'all', // 新增：健康子分類篩選
                 isEditModalOpen: false,
                 editForm: { id: null, category: '', data: {} },
-                
                 form: {
                     excretion: { type: 'poop', datetime: getTaiwanDateTimeStr(), imageBase64: null },
                     food: { type: 'dry', brand: '皇家 K36', amountGiven: '', supplements: [], datetime: getTaiwanDateTimeStr() },
@@ -758,12 +750,32 @@
                         date: getTaiwanDateStr(), 
                         subType: 'deworming', 
                         brand: '', 
-                        hospital: '',    // 新增：動物醫院
-                        orders: '',      // 新增：醫囑
-                        notes: ''        // 新增：醫療備註
+                        hospital: '',    
+                        orders: '',
+                        medication: '',
+                        notes: '',
+                        billingDetails: [],
+                        checkupItems: [],
+                        imageBase64: null
                     }
                 },
-                records: []
+                records: [],
+                foodChart: null 
+            }
+        },
+        watch: {
+            records: {
+                handler(newVal) {
+                    if (this.currentTab === 'dashboard') {
+                        this.$nextTick(() => { this.updateChart(); });
+                    }
+                },
+                deep: true
+            },
+            currentTab(newVal) {
+                if (newVal === 'dashboard') {
+                    this.$nextTick(() => { this.updateChart(); });
+                }
             }
         },
         computed: {
@@ -774,11 +786,10 @@
             },
             filteredRecords() {
                 let result = this.records.sort((a, b) => {
-                    const timeA = a.timestamp.endsWith('Z') ? new Date(a.timestamp).getTime() : new Date(a.timestamp).getTime(); 
-                    const timeB = b.timestamp.endsWith('Z') ? new Date(b.timestamp).getTime() : new Date(b.timestamp).getTime();
+                    const timeA = new Date(a.timestamp).getTime(); 
+                    const timeB = new Date(b.timestamp).getTime();
                     return timeB - timeA;
                 });
-                
                 if (this.filterDate) {
                     result = result.filter(record => {
                         let t = record.timestamp;
@@ -789,6 +800,10 @@
                 if (this.filterCategory !== 'all') {
                     if (this.filterCategory === 'health') {
                         result = result.filter(record => record.category === 'health' || record.category === 'meds');
+                        // 健康子分類篩選
+                        if (this.filterHealthSubType !== 'all') {
+                            result = result.filter(r => (r.data.subType || 'deworming') === this.filterHealthSubType);
+                        }
                     } else {
                         result = result.filter(record => record.category === this.filterCategory);
                     }
@@ -816,11 +831,7 @@
                         let eaten = 0;
                         const given = parseFloat(r.data.amountGiven) || 0;
                         const left = parseFloat(r.data.amountLeft) || 0;
-                        
-                        if (r.data.status !== 'eating') { 
-                             eaten = given - left; 
-                        }
-                        
+                        if (r.data.status !== 'eating') { eaten = given - left; }
                         if (eaten > 0) {
                             foodDetails.total += eaten;
                             if (r.data.type === 'dry') foodDetails.dry += eaten;
@@ -829,53 +840,36 @@
                         }
                     }
                 });
-
                 return { poopCount, peeCount, foodDetails };
             },
-            
             ageDisplay() {
                 const birth = new Date('2025-06-28');
                 const now = getTaiwanDate();
-                
                 if (now < birth) {
                     const diffTime = Math.abs(birth - now);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                     return `Coming soon in ${diffDays} days`;
                 }
-
                 let years = now.getFullYear() - birth.getFullYear();
                 let months = now.getMonth() - birth.getMonth();
                 let days = now.getDate() - birth.getDate();
-
-                if (days < 0) {
-                    months--;
-                    const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-                    days += prevMonth.getDate();
-                }
-
-                if (months < 0) {
-                    years--;
-                    months += 12;
-                }
-
+                if (days < 0) { months--; const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0); days += prevMonth.getDate(); }
+                if (months < 0) { years--; months += 12; }
                 let result = [];
                 if (years > 0) result.push(`${years} year${years > 1 ? 's' : ''}`);
                 if (months > 0) result.push(`${months} month${months > 1 ? 's' : ''}`);
                 result.push(`${days} day${days > 1 ? 's' : ''}`);
-
                 return result.join(' ');
             }
         },
         async created() {
             signInAnonymously(auth)
                 .then(() => {
-                    console.log("登入成功，開始讀取資料");
                     const q = query(collection(db, "records"), orderBy("timestamp", "desc"));
                     onSnapshot(q, (snapshot) => { 
                         this.records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); 
                         this.isLoading = false; 
                     });
-                    
                     getDoc(doc(db, "config", "general")).then(settingsDoc => {
                          if (settingsDoc.exists()) { 
                             const data = settingsDoc.data();
@@ -883,49 +877,28 @@
                             this.settings.wetOptions = data.wetOptions || [];
                             this.settings.snackOptions = data.snackOptions || []; 
                             this.settings.supplements = data.supplements || [];
-                        } else { 
-                            setDoc(doc(db, "config", "general"), this.settings); 
-                        }
+                            this.settings.chipId = data.chipId || '900073001039569';
+                            if (data.allergies) {
+                                this.settings.allergies = data.allergies;
+                            } else {
+                                this.settings.allergies = { suspected: [], confirmed: [] };
+                            }
+                        } else { setDoc(doc(db, "config", "general"), this.settings); }
                     });
                 })
-                .catch((error) => {
-                    console.error("登入失敗", error);
-                    alert("連線失敗，請檢查網路設定");
-                    this.isLoading = false;
-                });
+                .catch((error) => { console.error("登入失敗", error); this.isLoading = false; });
         },
         methods: {
-            // 修改後的日期時間格式化函式 (相容 DateTime 與 Date)
             getFormattedDisplay(isoStr) {
                 if (!isoStr) return { full: '請選擇', date: '--', time: '--' };
-
-                // 情況 1: 包含時間 (2025-12-18T13:02)
                 if (isoStr.includes('T')) {
                     const [datePart, timePart] = isoStr.split('T');
                     const [y, m, d] = datePart.split('-');
                     const [H, M] = timePart.split(':');
-                    
-                    const dateStr = `${y}/${m}/${d}`;
-                    const timeStr = `${H}:${M}`;
-
-                    return {
-                        full: `${dateStr} ${timeStr}`,
-                        date: dateStr,
-                        time: timeStr
-                    };
+                    return { full: `${y}/${m}/${d} ${H}:${M}`, date: `${y}/${m}/${d}`, time: `${H}:${M}` };
                 }
-
-                // 情況 2: 只有日期 (2025-12-18)
                 const [y, m, d] = isoStr.split('-');
-                if (y && m && d) {
-                    const dateStr = `${y}/${m}/${d}`;
-                    return {
-                        full: dateStr, // 單純顯示 2025/12/18
-                        date: dateStr,
-                        time: ''
-                    };
-                }
-
+                if (y && m && d) return { full: `${y}/${m}/${d}`, date: `${y}/${m}/${d}`, time: '' };
                 return { full: isoStr, date: isoStr, time: '' };
             },
             getCurrentDateDisplay() {
@@ -939,73 +912,189 @@
                 if (type === 'snack') return this.settings.snackOptions;
                 return [];
             },
-            getHealthPlaceholder() {
-                if (this.form.health.subType === 'vaccine') return '';
-                if (this.form.health.subType === 'bath') return '';
-                return '';
-            },
             getRecordIcon(record) {
                 if (record.category === 'excretion') return record.data.type === 'poop' ? 'fa-poop' : 'fa-tint';
                 if (record.category === 'food') return 'fa-utensils';
-                
-                if (record.category === 'meds') return 'fa-capsules'; 
-                if (record.category === 'health') {
-                    if (record.data.subType === 'vaccine') return 'fa-syringe';
-                    if (record.data.subType === 'bath') return 'fa-bath';
-                    if (record.data.subType === 'medical') return 'fa-stethoscope'; 
-                    return 'fa-capsules';
-                }
-                return 'fa-circle';
+                const type = record.data.subType || 'meds';
+                if (type === 'vaccine') return 'fa-syringe';
+                if (type === 'bath') return 'fa-bath';
+                if (type === 'medical') return 'fa-stethoscope'; 
+                if (type === 'checkup') return 'fa-file-medical';
+                if (type === 'allergy') return 'fa-shield-virus';
+                return 'fa-capsules';
             },
-            getRecordTitle(record) {
-                 if (record.category === 'excretion') return record.data.type === 'poop' ? '便便' : '尿尿';
-                 if (record.category === 'food') return `${this.foodTypeLabels[record.data.type] || '食物'} ${record.data.brand}`;
-                 if (record.category === 'meds' || record.category === 'health') return this.getHealthTitle(record);
-                 return '紀錄';
-            },
-            getHealthTitle(record) {
-                if (record.category === 'meds') return '體內外驅蟲'; 
-                const subType = record.data.subType;
-                if (subType === 'vaccine') return '施打疫苗';
-                if (subType === 'bath') return '洗香香';
-                if (subType === 'medical') return '就診紀錄';
-                return '體內外驅蟲';
+            getHealthTypeLabel(type) {
+                const map = {
+                    'deworming': '驅蟲', 'vaccine': '疫苗', 'bath': '洗澡', 'medical': '就醫', 'checkup': '體檢', 'meds': '驅蟲', 'allergy': '過敏'
+                };
+                return map[type] || '健康';
             },
             formatDate(isoString) { 
                 if(!isoString) return ''; 
-                let targetStr = isoString;
-                if (isoString.endsWith('Z')) targetStr = convertUtcToTwString(isoString);
-
+                let targetStr = isoString.endsWith('Z') ? convertUtcToTwString(isoString) : isoString;
                 const [datePart] = targetStr.split('T');
                 const [y, m, d] = datePart.split('-');
                 return `${y}/${parseInt(m)}/${parseInt(d)}`; 
             },
             formatTime(isoString) { 
                 if(!isoString) return '--:--'; 
-                let targetStr = isoString;
-                if (isoString.endsWith('Z')) targetStr = convertUtcToTwString(isoString);
-
+                let targetStr = isoString.endsWith('Z') ? convertUtcToTwString(isoString) : isoString;
                 const parts = targetStr.split('T');
-                if (parts.length < 2) return '--:--';
-                return parts[1]; 
+                return parts.length > 1 ? parts[1] : '--:--'; 
+            },
+            calculateTotal(items) {
+                if (!items || !Array.isArray(items)) return 0;
+                return items.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
             },
             async updateSettings() { await setDoc(doc(db, "config", "general"), this.settings); },
-            
             addFoodOption() { 
                 const newOpt = prompt("請輸入新品牌名稱："); 
                 if (newOpt) { 
                     if (this.form.food.type === 'dry') this.settings.dryOptions.push(newOpt); 
                     else if (this.form.food.type === 'wet') this.settings.wetOptions.push(newOpt); 
                     else if (this.form.food.type === 'snack') this.settings.snackOptions.push(newOpt);
-                    
-                    this.form.food.brand = newOpt; 
-                    this.updateSettings(); 
+                    this.form.food.brand = newOpt; this.updateSettings(); 
                 } 
             },
-            
             addSupplementOption() { const newSupp = prompt("請輸入新保健品名稱："); if (newSupp) { this.settings.supplements.push(newSupp); this.updateSettings(); } },
+            
+            // 晶片相關功能
+            copyChipId() {
+                const text = this.settings.chipId || '';
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("晶片號碼已複製！");
+                }).catch(err => {
+                    alert("複製失敗，請手動複製");
+                });
+            },
 
-            handleImageCompress(event) {
+            // 過敏原刪除防呆
+            async deleteAllergy(type, index) {
+                if(!confirm("確定要刪除此過敏原嗎？")) return;
+                this.settings.allergies[type].splice(index, 1);
+                await this.updateSettings();
+            },
+            addAllergy(type) {
+                const val = this.tempAllergyInput[type].trim();
+                if (val) {
+                    this.settings.allergies[type].push(val);
+                    this.tempAllergyInput[type] = '';
+                }
+            },
+            async saveAllergies() {
+                try {
+                    await this.updateSettings();
+                    alert("過敏原設定已更新！");
+                } catch(e) {
+                    alert("更新失敗：" + e.message);
+                }
+            },
+
+            // 圖表更新邏輯
+            updateChart() {
+                const ctx = document.getElementById('foodChart');
+                if (!ctx) return;
+
+                const labels = [];
+                const dataPoints = [];
+                const today = getTaiwanDate();
+                
+                for (let i = 7; i >= 1; i--) {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() - i);
+                    const label = `${d.getMonth() + 1}/${d.getDate()}`;
+                    const dateStr = getTaiwanDateStr(d); 
+                    
+                    labels.push(label);
+
+                    const dailyTotal = this.records
+                        .filter(r => {
+                            if (r.category !== 'food') return false;
+                            let t = r.timestamp;
+                            if (t && t.endsWith('Z')) t = convertUtcToTwString(t);
+                            return t && t.startsWith(dateStr);
+                        })
+                        .reduce((acc, r) => {
+                            const given = parseFloat(r.data.amountGiven) || 0;
+                            const left = parseFloat(r.data.amountLeft) || 0;
+                            const eaten = (r.data.status !== 'eating') ? (given - left) : 0;
+                            return acc + eaten;
+                        }, 0);
+                    
+                    dataPoints.push(dailyTotal);
+                }
+
+                if (this.foodChart) {
+                    this.foodChart.destroy();
+                }
+
+                // 註冊 DataLabels
+                Chart.register(ChartDataLabels);
+
+                // 創建奶油黃漸層
+                const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 200);
+                gradient.addColorStop(0, 'rgba(222, 184, 135, 0.25)'); // Buttery yellow/brown
+                gradient.addColorStop(1, 'rgba(222, 184, 135, 0.0)');
+
+                this.foodChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '進食量 (g)',
+                            data: dataPoints,
+                            borderColor: '#DEB887', // 奶油蜂蜜色
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            tension: 0.4, 
+                            fill: true,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#DEB887',
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: { top: 25, right: 10, left: 10 } 
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                align: 'top',
+                                anchor: 'end',
+                                offset: 2,
+                                color: '#DEB887', // 與線條同色
+                                font: {
+                                    weight: 'bold',
+                                    size: 11,
+                                    family: "'Rubik', sans-serif"
+                                },
+                                formatter: (value) => value > 0 ? value.toFixed(1) : ''
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                border: { display: false }, 
+                                grid: {
+                                    borderDash: [5, 5],
+                                    color: '#f0f0f0'
+                                },
+                                ticks: { display: false } 
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 11, family: "'Rubik', sans-serif" }, color: '#9CA3AF' }
+                            }
+                        }
+                    }
+                });
+            },
+            
+            handleImageCompress(event, targetType) {
                 const file = event.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
@@ -1021,42 +1110,35 @@
                         canvas.height = img.height * scaleSize;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        this.form.excretion.imageBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                        const result = canvas.toDataURL('image/jpeg', 0.5);
+                        
+                        if (targetType === 'excretion') this.form.excretion.imageBase64 = result;
+                        else if (targetType === 'health') this.form.health.imageBase64 = result;
+                        else if (targetType === 'edit') this.editForm.data.imageBase64 = result;
                     }
-                    img.onerror = () => { alert("無法讀取圖片"); }
                 }
             },
 
             openEditModal(record) {
                 this.editForm = JSON.parse(JSON.stringify(record));
-                if (this.editForm.timestamp && this.editForm.timestamp.endsWith('Z')) {
-                    this.editForm.timestamp = convertUtcToTwString(this.editForm.timestamp);
-                }
-                if (this.editForm.data.startTime && this.editForm.data.startTime.endsWith('Z')) {
-                    this.editForm.data.startTime = convertUtcToTwString(this.editForm.data.startTime);
-                }
-                if (this.editForm.data.endTime && this.editForm.data.endTime.endsWith('Z')) {
-                    this.editForm.data.endTime = convertUtcToTwString(this.editForm.data.endTime);
-                }
-                if (this.editForm.data.datetime && this.editForm.data.datetime.endsWith('Z')) {
-                    this.editForm.data.datetime = convertUtcToTwString(this.editForm.data.datetime);
-                }
-
-                if (this.editForm.category === 'meds' && !this.editForm.data.subType) {
-                    this.editForm.data.subType = 'deworming';
-                }
+                if (this.editForm.timestamp && this.editForm.timestamp.endsWith('Z')) this.editForm.timestamp = convertUtcToTwString(this.editForm.timestamp);
+                ['startTime', 'endTime', 'datetime'].forEach(key => {
+                    if (this.editForm.data[key] && this.editForm.data[key].endsWith('Z')) this.editForm.data[key] = convertUtcToTwString(this.editForm.data[key]);
+                });
+                if (this.editForm.category === 'meds' && !this.editForm.data.subType) this.editForm.data.subType = 'deworming';
                 this.isEditModalOpen = true;
             },
 
             async submitEdit() {
                 try {
                     this.isLoading = true;
-                    if (this.editForm.category === 'food') {
-                         this.editForm.timestamp = this.editForm.data.startTime; 
-                    } else if (this.editForm.category === 'excretion') {
-                         this.editForm.timestamp = this.editForm.data.datetime;
-                    } else if (this.editForm.category === 'health' || this.editForm.category === 'meds') {
-                         this.editForm.timestamp = this.editForm.data.date;
+                    if (this.editForm.category === 'food') this.editForm.timestamp = this.editForm.data.startTime; 
+                    else if (this.editForm.category === 'excretion') this.editForm.timestamp = this.editForm.data.datetime;
+                    else if (this.editForm.category === 'health' || this.editForm.category === 'meds') {
+                        this.editForm.timestamp = this.editForm.data.date;
+                        if(this.editForm.data.billingDetails) {
+                            this.editForm.data.totalCost = this.calculateTotal(this.editForm.data.billingDetails);
+                        }
                     }
                     
                     await updateDoc(doc(db, "records", this.editForm.id), {
@@ -1065,23 +1147,14 @@
                         data: this.editForm.data
                     });
                     this.isEditModalOpen = false;
-                } catch (e) {
-                    alert("修改失敗：" + e.message);
-                } finally {
-                    this.isLoading = false;
-                }
+                } catch (e) { alert("修改失敗：" + e.message); } finally { this.isLoading = false; }
             },
 
             async submitExcretion() {
                 try {
                     this.isLoading = true;
-                    await addDoc(collection(db, "records"), {
-                        category: 'excretion',
-                        timestamp: this.form.excretion.datetime,
-                        data: { ...this.form.excretion }
-                    });
-                    this.form.excretion.imageBase64 = null;
-                    this.form.excretion.datetime = getTaiwanDateTimeStr();
+                    await addDoc(collection(db, "records"), { category: 'excretion', timestamp: this.form.excretion.datetime, data: { ...this.form.excretion } });
+                    this.form.excretion.imageBase64 = null; this.form.excretion.datetime = getTaiwanDateTimeStr();
                     this.currentTab = 'dashboard'; 
                 } catch (error) { alert("儲存失敗！\n" + error.message); } finally { this.isLoading = false; }
             },
@@ -1090,51 +1163,41 @@
                 if (!this.form.food.amountGiven) return alert('請輸入重量');
                 try {
                     await addDoc(collection(db, "records"), {
-                        category: 'food',
-                        timestamp: this.form.food.datetime,
+                        category: 'food', timestamp: this.form.food.datetime,
                         data: { status: 'eating', startTime: this.form.food.datetime, endTime: null, type: this.form.food.type, brand: this.form.food.brand, amountGiven: this.form.food.amountGiven, amountLeft: null, supplements: [...this.form.food.supplements] }
                     });
                     this.form.food.amountGiven = ''; this.form.food.supplements = [];
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    this.currentTab = 'dashboard'; 
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); this.currentTab = 'dashboard'; 
                 } catch (e) { alert("錯誤：" + e.message); }
             },
             async submitLeftover() {
                 if (!this.activeMeal) return;
-                const endTimeStr = this.form.leftover.datetime; 
                 try {
-                    await updateDoc(doc(db, "records", this.activeMeal.id), { "data.status": "finished", "data.endTime": endTimeStr, "data.amountLeft": this.form.leftover.amount });
+                    await updateDoc(doc(db, "records", this.activeMeal.id), { "data.status": "finished", "data.endTime": this.form.leftover.datetime, "data.amountLeft": this.form.leftover.amount });
                     this.currentTab = 'dashboard';
                 } catch (e) { alert("錯誤：" + e.message); }
             },
             async quickFinish(id) {
                 if(!confirm('確定要直接結算嗎？')) return;
-                try {
-                    await updateDoc(doc(db, "records", id), { "data.status": "finished", "data.endTime": getTaiwanDateTimeStr(), "data.amountLeft": 0 });
-                } catch (e) { alert("錯誤：" + e.message); }
+                try { await updateDoc(doc(db, "records", id), { "data.status": "finished", "data.endTime": getTaiwanDateTimeStr(), "data.amountLeft": 0 }); } catch (e) { alert("錯誤：" + e.message); }
             },
             
             async submitHealth() {
                 try {
-                    await addDoc(collection(db, "records"), { 
-                        category: 'health', 
-                        timestamp: this.form.health.date, 
-                        data: { ...this.form.health } 
-                    });
-                    // 重置表單，保留部分預設值
-                    this.form.health.brand = ''; 
-                    this.form.health.hospital = '';
-                    this.form.health.orders = '';
-                    this.form.health.notes = '';
+                    const totalCost = this.calculateTotal(this.form.health.billingDetails);
+                    const saveData = { ...this.form.health, totalCost };
+
+                    await addDoc(collection(db, "records"), { category: 'health', timestamp: this.form.health.date, data: saveData });
+                    
+                    this.form.health.brand = ''; this.form.health.hospital = ''; this.form.health.orders = ''; this.form.health.notes = ''; 
+                    this.form.health.medication = ''; this.form.health.imageBase64 = null;
+                    this.form.health.billingDetails = []; this.form.health.checkupItems = [];
                     
                     this.currentTab = 'history';
                 } catch (e) { alert("錯誤：" + e.message); }
             },
             
-            async deleteRecord(id) {
-                if(!confirm('確定要刪除嗎？')) return;
-                try { await deleteDoc(doc(db, "records", id)); } catch (e) { alert("刪除失敗：" + e.message); }
-            },
+            async deleteRecord(id) { if(!confirm('確定要刪除嗎？')) return; try { await deleteDoc(doc(db, "records", id)); } catch (e) { alert("刪除失敗：" + e.message); } },
             async backupData() {
                 if (!confirm("確定要下載備份檔案嗎？")) return;
                 try {
@@ -1142,20 +1205,13 @@
                     const querySnapshot = await getDocs(collection(db, "records"));
                     const dataToBackup = [];
                     querySnapshot.forEach((doc) => { dataToBackup.push({ id: doc.id, ...doc.data() }); });
-                    if (dataToBackup.length === 0) { alert("目前沒有資料可以備份"); return; }
                     const jsonString = JSON.stringify(dataToBackup, null, 2);
                     const blob = new Blob([jsonString], { type: "application/json" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
-                    const dateStr = getTaiwanDateStr();
-                    a.href = url;
-                    a.download = `pearl_backup_${dateStr}.json`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    alert(`備份成功！已下載 ${dataToBackup.length} 筆資料。`);
-                } catch (error) { console.error("備份失敗", error); alert("備份失敗：" + error.message); } finally { this.isLoading = false; }
+                    a.href = url; a.download = `pearl_backup_${getTaiwanDateStr()}.json`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                } catch (error) { alert("備份失敗：" + error.message); } finally { this.isLoading = false; }
             }
         }
     }).mount('#app');
