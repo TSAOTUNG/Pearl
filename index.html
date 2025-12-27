@@ -182,7 +182,7 @@
                         </div>
 
                          <div v-if="editForm.data.subType === 'vaccine'" class="space-y-4 mb-4">
-                            <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">疫苗名稱/備註</label><div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div></div>
+                            <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">疫苗名稱</label><div class="input-wrapper"><input type="text" v-model="editForm.data.brand" class="ios-input-fix"></div></div>
                             <div class="relative">
                                 <input type="file" @change="(e) => handleImageCompress(e, 'edit')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
                                 <div v-if="!editForm.data.imageBase64" class="w-full h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50"><i class="fas fa-camera mb-1"></i><span class="text-[10px]">補傳照片</span></div>
