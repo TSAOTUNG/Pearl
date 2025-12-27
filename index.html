@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>小珍珠的日常</title>
@@ -32,18 +32,35 @@
         .avatar-img { object-position: 0% 25%; }
         .empty-avatar-img { object-position: 0% 25%; }
         
+        /* 輸入框容器 */
         .input-wrapper {
             display: flex; align-items: center; justify-content: center;
             background-color: #FAF7F0; border: 1px solid #EBE0D0;
             border-radius: 0.75rem; min-height: 3rem; position: relative; overflow: hidden;
         }
         .ios-input-hidden { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; cursor: pointer; }
+        
+        /* iOS 輸入框修正：移除 padding-top，使用 Flexbox 對齊 */
         .ios-input-fix {
             background: transparent; border: none; width: 100%; height: 100%;
             text-align: center; text-align-last: center; font-size: 16px;
-            appearance: none; -webkit-appearance: none; padding: 0; margin: 0; padding-top: 4px; 
+            appearance: none; -webkit-appearance: none; padding: 0; margin: 0;
             font-family: 'Noto Sans TC', sans-serif; font-weight: 500; color: #5D5D5D;
+            display: flex; align-items: center; justify-content: center; /* 確保文字垂直置中 */
         }
+        /* 針對 select 元素的特殊處理 */
+        select.ios-input-fix {
+            display: block; /* Select 需要 block 才能正常顯示選項 */
+            padding-top: 10px; /* 稍微調整 select 的文字位置 */
+        }
+
+        /* 針對只有底線的輸入框 (iOS 去除預設樣式) */
+        .underline-input {
+            border-radius: 0;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
         .custom-display-layer {
             position: absolute; inset: 0; display: flex; flex-direction: column;
             align-items: center; justify-content: center; pointer-events: none; z-index: 1;
@@ -54,6 +71,9 @@
         .modal-enter-active .modal-content, .modal-leave-active .modal-content { transition: transform 0.3s ease; }
         .modal-enter-from .modal-content, .modal-leave-to .modal-content { transform: translateY(20px) scale(0.95); }
         .stat-card { background: linear-gradient(135deg, #ffffff 0%, #FFFDF5 100%); border: 1px solid #F0E6D2; }
+        
+        /* 解決 iOS 滾動卡頓 */
+        .scroll-touch { -webkit-overflow-scrolling: touch; }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -160,20 +180,20 @@
                             <div v-if="editForm.data.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-2">體檢項目與結果</label>
                                 <div v-for="(item, idx) in editForm.data.checkupItems" :key="idx" class="flex gap-2 mb-2">
-                                    <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                    <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                    <button @click="editForm.data.checkupItems.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                                    <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                    <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                    <button @click="editForm.data.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                                 </div>
                                 <button @click="if(!editForm.data.checkupItems) editForm.data.checkupItems=[]; editForm.data.checkupItems.push({name:'', result:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增項目</button>
                             </div>
 
                             <div v-if="editForm.data.subType === 'medical'">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">醫囑/診斷</label>
-                                <div class="input-wrapper h-auto min-h-[4rem]"><textarea v-model="editForm.data.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none"></textarea></div>
+                                <div class="input-wrapper h-auto min-h-[4rem]"><textarea v-model="editForm.data.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none" style="display:block;"></textarea></div>
                             </div>
                             <div v-if="editForm.data.subType === 'medical'">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">開立藥物</label>
-                                <div class="input-wrapper"><input type="text" v-model="editForm.data.medication" class="ios-input-fix" placeholder=""></div>
+                                <div class="input-wrapper"><input type="text" v-model="editForm.data.medication" class="ios-input-fix" placeholder="藥品名稱/天數"></div>
                             </div>
 
                             <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
@@ -182,9 +202,9 @@
                                     <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(editForm.data.billingDetails) }}</span>
                                 </div>
                                 <div v-for="(bill, idx) in editForm.data.billingDetails" :key="idx" class="flex gap-2 mb-2">
-                                    <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                    <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                    <button @click="editForm.data.billingDetails.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                                    <input type="text" v-model="bill.name" placeholder="項目" class="flex-[2] text-xs border-b border-gray-300 bg-transparent py-1 underline-input rounded-none">
+                                    <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                    <button @click="editForm.data.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                                 </div>
                                 <button @click="if(!editForm.data.billingDetails) editForm.data.billingDetails=[]; editForm.data.billingDetails.push({name:'', amount:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
                             </div>
@@ -199,12 +219,14 @@
         </div>
     </transition>
 
-    <header class="relative bg-white shadow-sm pb-4 rounded-b-[2rem] overflow-hidden z-10">
-        <div class="h-52 w-full overflow-hidden relative bg-[#E6D2B5]">
+    <header class="relative bg-white shadow-sm pb-4 rounded-b-[2rem] overflow-hidden z-10" style="padding-top: env(safe-area-inset-top);">
+        <div class="h-52 w-full overflow-hidden relative bg-[#E6D2B5] absolute top-0 left-0 w-full" style="height: calc(13rem + env(safe-area-inset-top)); margin-top: calc(-1 * env(safe-area-inset-top));">
             <img src="./banner.jpg" onerror="this.style.display='none'" alt="小珍珠睡覺" class="w-full h-full object-cover banner-img opacity-95">
             <div class="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent"></div>
         </div>
-        <div class="pl-10 pr-6 -mt-14 flex items-end relative z-20">
+        <div class="h-40"></div>
+        
+        <div class="pl-10 pr-6 -mt-10 flex items-end relative z-20">
             <div class="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-[#FFFDF5] flex-shrink-0">
                 <img src="./avatar.jpg" alt="小珍珠" class="w-full h-full object-cover avatar-img">
             </div>
@@ -220,7 +242,7 @@
 
                 <button @click="copyChipId" class="text-[10px] text-gray-400 px-1 py-0.5 rounded inline-flex items-center active:bg-gray-50 transition group">
                     <i class="fas fa-microchip mr-1.5 text-[#C0A062]"></i>
-                    <span class="font-mono tracking-wide">{{ settings.chipId || '900073001039569' }}</span>
+                    <span class="font-mono tracking-wide">{{ settings.chipId || '900123000xxxxxx' }}</span>
                     <i class="fas fa-copy ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity"></i>
                 </button>
             </div>
@@ -346,7 +368,7 @@
                     </label>
                 </div>
                 <div class="mb-6">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片</label>
+                    <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片 (自動壓縮)</label>
                     <div class="relative">
                         <input type="file" @change="(e) => handleImageCompress(e, 'excretion')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
                         <div v-if="!form.excretion.imageBase64" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
@@ -372,7 +394,7 @@
                 <h4 class="text-sm font-bold text-gray-600 mb-3 text-center">我要收碗 (記錄剩餘)</h4>
                 <div class="grid grid-cols-2 gap-3 mb-4">
                     <div class="h-full"><label class="block text-[10px] text-gray-400 mb-1 text-center">收碗時間</label><div class="input-wrapper h-14"><div class="custom-display-layer"><div class="text-xl text-gray-700 tracking-wider">{{ getFormattedDisplay(form.leftover.datetime).time }}</div></div><input type="datetime-local" v-model="form.leftover.datetime" class="ios-input-hidden"></div></div>
-                    <div><label class="block text-[10px] text-gray-400 mb-1 text-center">剩餘 (g)</label><div class="input-wrapper h-14"><input type="number" v-model.number="form.leftover.amount" class="ios-input-fix text-lg font-bold" placeholder="0" style="padding-top:0"></div></div>
+                    <div><label class="block text-[10px] text-gray-400 mb-1 text-center">剩餘 (g)</label><div class="input-wrapper h-14"><input type="number" v-model.number="form.leftover.amount" class="ios-input-fix text-lg font-bold" placeholder="0"></div></div>
                 </div>
                 <button @click="submitLeftover" class="w-full py-3 bg-[#8C7B66] text-white rounded-xl shadow-md hover:bg-[#7A6A56] transition">完成用餐</button>
             </div>
@@ -380,12 +402,12 @@
             <div class="cream-card p-6 rounded-2xl">
                 <h2 class="text-lg font-bold mb-4 text-[#8C7B66] flex items-center justify-between"><span><i class="fas fa-utensils mr-2"></i>我要放飯</span></h2>
                 <div class="mb-4"><label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">放飯時間</label><div class="input-wrapper"><div class="custom-display-layer"><span class="text-base text-gray-600 tracking-wide">{{ getFormattedDisplay(form.food.datetime).full }}</span></div><input type="datetime-local" v-model="form.food.datetime" class="ios-input-hidden"></div></div>
-                <div class="flex space-x-2 mb-4 overflow-x-auto no-scrollbar pb-1 justify-center">
-                    <button v-for="type in ['dry', 'wet', 'snack']" @click="form.food.type = type" :class="['flex-1 px-4 py-2 rounded-lg text-sm border transition-all whitespace-nowrap', form.food.type === type ? 'bg-[#E6D2B5] border-[#E6D2B5] text-white shadow-sm' : 'border-gray-200 text-gray-400 bg-white']">{{ foodTypeLabels[type] }}</button>
+                <div class="flex space-x-2 mb-4 overflow-x-auto no-scrollbar scroll-touch pb-1 justify-center">
+                    <button v-for="type in ['dry', 'wet', 'snack']" @click="form.food.type = type" :class="['flex-1 px-4 py-2 rounded-lg text-sm border transition-all whitespace-nowrap shrink-0', form.food.type === type ? 'bg-[#E6D2B5] border-[#E6D2B5] text-white shadow-sm' : 'border-gray-200 text-gray-400 bg-white']">{{ foodTypeLabels[type] }}</button>
                 </div>
                 <div class="grid grid-cols-3 gap-3 mb-4">
-                    <div class="col-span-2"><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">品牌</label><div class="flex space-x-1 input-wrapper px-2"><select v-model="form.food.brand" class="ios-input-fix text-left" style="padding-top:0"><option v-for="opt in getFoodOptions(form.food.type)" :value="opt">{{ opt }}</option></select><button @click="addFoodOption" class="px-2 text-gray-400">+</button></div></div>
-                    <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">給予 (g)</label><div class="input-wrapper"><input type="number" v-model.number="form.food.amountGiven" class="ios-input-fix font-bold text-lg" style="padding-top:0"></div></div>
+                    <div class="col-span-2"><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">品牌</label><div class="flex space-x-1 input-wrapper px-2"><select v-model="form.food.brand" class="ios-input-fix text-left"><option v-for="opt in getFoodOptions(form.food.type)" :value="opt">{{ opt }}</option></select><button @click="addFoodOption" class="px-2 text-gray-400">+</button></div></div>
+                    <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">給予 (g)</label><div class="input-wrapper"><input type="number" v-model.number="form.food.amountGiven" class="ios-input-fix font-bold text-lg"></div></div>
                 </div>
                 <div v-if="form.food.type !== 'snack'" class="mb-6 bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
                     <div class="flex justify-between items-center mb-2"><label class="text-xs font-bold text-gray-500">添加保健品</label><button @click="addSupplementOption" class="text-[10px] text-[#A68A64] border border-[#A68A64] px-1.5 rounded">+ 新增</button></div>
@@ -453,7 +475,7 @@
                         </div>
                         <div class="flex gap-2">
                             <input type="text" v-model="tempAllergyInput.suspected" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-300">
-                            <button @click="addAllergy('suspected')" class="bg-orange-400 text-white px-3 py-1 rounded-lg text-sm shadow-sm">新增</button>
+                            <button @click="addAllergy('suspected')" class="bg-orange-400 text-white px-3 py-1 rounded-lg text-sm shadow-sm whitespace-nowrap shrink-0">新增</button>
                         </div>
                     </div>
 
@@ -467,26 +489,27 @@
                         </div>
                         <div class="flex gap-2">
                             <input type="text" v-model="tempAllergyInput.confirmed" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-red-300">
-                            <button @click="addAllergy('confirmed')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm shadow-sm">新增</button>
+                            <button @click="addAllergy('confirmed')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm shadow-sm whitespace-nowrap shrink-0">新增</button>
                         </div>
                     </div>
 
                     <button @click="saveAllergies" class="w-full py-3 bg-[#E6D2B5] text-white rounded-xl shadow-md hover:bg-[#D4C0A1] transition font-bold mt-2">更新過敏原設定</button>
+                    <p class="text-[10px] text-gray-400 text-center mt-2">此設定會直接更新，不會產生流水帳紀錄</p>
                 </div>
 
                 <div v-else>
                     <div v-if="['deworming', 'bath'].includes(form.health.subType)" class="mb-6">
                         <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">備註</label>
-                        <div class="input-wrapper"><input type="text" v-model="form.health.brand" class="ios-input-fix" style="padding-top:0"></div>
+                        <div class="input-wrapper"><input type="text" v-model="form.health.brand" class="ios-input-fix"></div>
                     </div>
 
                     <div v-if="form.health.subType === 'vaccine'" class="mb-6 space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">疫苗名稱</label>
-                            <div class="input-wrapper"><input type="text" v-model="form.health.brand" class="ios-input-fix" style="padding-top:0"></div>
+                            <div class="input-wrapper"><input type="text" v-model="form.health.brand" class="ios-input-fix"></div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片</label>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">照片 (自動壓縮)</label>
                             <div class="relative">
                                 <input type="file" @change="(e) => handleImageCompress(e, 'health')" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
                                 <div v-if="!form.health.imageBase64" class="w-full h-32 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50"><i class="fas fa-camera text-2xl mb-2"></i><span class="text-xs">拍攝/上傳</span></div>
@@ -499,25 +522,25 @@
                     </div>
 
                     <div v-if="['medical', 'checkup'].includes(form.health.subType)" class="space-y-4 mb-6">
-                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">動物醫院</label><div class="input-wrapper"><input type="text" v-model="form.health.hospital" class="ios-input-fix" style="padding-top:0"></div></div>
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">動物醫院</label><div class="input-wrapper"><input type="text" v-model="form.health.hospital" class="ios-input-fix"></div></div>
                         
                         <div v-if="form.health.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">體檢項目與結果</label>
                             <div v-for="(item, idx) in form.health.checkupItems" :key="idx" class="flex gap-2 mb-2">
-                                <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                <button @click="form.health.checkupItems.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                                <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                <button @click="form.health.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                             </div>
                             <button @click="form.health.checkupItems.push({name:'', result:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增體檢項目</button>
                         </div>
 
                         <div v-if="form.health.subType === 'medical'">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑/診斷</label>
-                            <div class="input-wrapper" style="height: auto; min-height: 5rem;"><textarea v-model="form.health.orders" class="ios-input-fix" style="height: 5rem; padding-top: 10px; resize: none; text-align: left; padding-left: 1rem; padding-right: 1rem;"></textarea></div>
+                            <div class="input-wrapper" style="height: auto; min-height: 5rem;"><textarea v-model="form.health.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none"></textarea></div>
                         </div>
                         <div v-if="form.health.subType === 'medical'">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">開立藥物</label>
-                            <div class="input-wrapper"><input type="text" v-model="form.health.medication" class="ios-input-fix" placeholder="" style="padding-top:0"></div>
+                            <div class="input-wrapper"><input type="text" v-model="form.health.medication" class="ios-input-fix" placeholder="藥品名稱/天數"></div>
                         </div>
 
                         <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
@@ -526,14 +549,14 @@
                                 <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(form.health.billingDetails) }}</span>
                             </div>
                             <div v-for="(bill, idx) in form.health.billingDetails" :key="idx" class="flex gap-2 mb-2">
-                                <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center">
-                                <button @click="form.health.billingDetails.splice(idx, 1)" class="text-red-300 px-1"><i class="fas fa-minus-circle"></i></button>
+                                <input type="text" v-model="bill.name" placeholder="項目" class="flex-[2] text-xs border-b border-gray-300 bg-transparent py-1 underline-input rounded-none">
+                                <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                <button @click="form.health.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                             </div>
                             <button @click="form.health.billingDetails.push({name:'', amount:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
                         </div>
 
-                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">備註</label><div class="input-wrapper"><input type="text" v-model="form.health.notes" class="ios-input-fix" style="padding-top:0"></div></div>
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">備註</label><div class="input-wrapper"><input type="text" v-model="form.health.notes" class="ios-input-fix"></div></div>
                     </div>
                     
                     <button @click="submitHealth" class="w-full py-3.5 bg-[#5D5D5D] text-white rounded-xl shadow-lg hover:bg-[#4A4A4A] transition font-medium">儲存記錄</button>
@@ -546,20 +569,20 @@
                 <button @click="backupData" class="w-full py-2 bg-white border border-stone-200 text-stone-400 rounded-xl shadow-sm text-xs flex items-center justify-center space-x-2 active:scale-95 transition hover:bg-stone-50"><i class="fas fa-download"></i><span>Download Backup</span></button>
             </div>
             <div class="sticky top-[76px] z-30 bg-[#FFFDF5]/95 backdrop-blur-sm pt-2 pb-4 -mx-5 px-5 border-b border-stone-100">
-                <div class="flex space-x-2 overflow-x-auto no-scrollbar mb-3">
-                    <button @click="filterCategory = 'all'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white border-gray-200 text-gray-500']">全部</button>
-                    <button @click="filterCategory = 'excretion'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'excretion' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">便溺</button>
-                    <button @click="filterCategory = 'food'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'food' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">用餐</button>
-                    <button @click="filterCategory = 'health'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap', filterCategory === 'health' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">健康</button>
+                <div class="flex space-x-2 overflow-x-auto no-scrollbar scroll-touch mb-3">
+                    <button @click="filterCategory = 'all'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap shrink-0', filterCategory === 'all' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white border-gray-200 text-gray-500']">全部</button>
+                    <button @click="filterCategory = 'excretion'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap shrink-0', filterCategory === 'excretion' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">便溺</button>
+                    <button @click="filterCategory = 'food'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap shrink-0', filterCategory === 'food' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">用餐</button>
+                    <button @click="filterCategory = 'health'" :class="['px-3 py-1.5 rounded-full text-xs border whitespace-nowrap shrink-0', filterCategory === 'health' ? 'bg-[#E6D2B5] text-white border-[#E6D2B5]' : 'bg-white border-gray-200 text-gray-500']">健康</button>
                 </div>
                 
-                <div v-if="filterCategory === 'health'" class="flex space-x-2 overflow-x-auto no-scrollbar mb-3 animate-fade-in">
-                    <button @click="filterHealthSubType = 'all'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'all' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">全部</button>
-                    <button @click="filterHealthSubType = 'deworming'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'deworming' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">驅蟲</button>
-                    <button @click="filterHealthSubType = 'vaccine'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'vaccine' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">疫苗</button>
-                    <button @click="filterHealthSubType = 'bath'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'bath' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">洗澡</button>
-                    <button @click="filterHealthSubType = 'medical'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'medical' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">就醫</button>
-                    <button @click="filterHealthSubType = 'checkup'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap', filterHealthSubType === 'checkup' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">體檢</button>
+                <div v-if="filterCategory === 'health'" class="flex space-x-2 overflow-x-auto no-scrollbar scroll-touch mb-3 animate-fade-in">
+                    <button @click="filterHealthSubType = 'all'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap shrink-0', filterHealthSubType === 'all' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">全部</button>
+                    <button @click="filterHealthSubType = 'deworming'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap shrink-0', filterHealthSubType === 'deworming' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">驅蟲</button>
+                    <button @click="filterHealthSubType = 'vaccine'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap shrink-0', filterHealthSubType === 'vaccine' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">疫苗</button>
+                    <button @click="filterHealthSubType = 'bath'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap shrink-0', filterHealthSubType === 'bath' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">洗澡</button>
+                    <button @click="filterHealthSubType = 'medical'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap shrink-0', filterHealthSubType === 'medical' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">就醫</button>
+                    <button @click="filterHealthSubType = 'checkup'" :class="['px-3 py-1 rounded-full text-[10px] border whitespace-nowrap shrink-0', filterHealthSubType === 'checkup' ? 'bg-[#8C7B66] text-white border-[#8C7B66]' : 'bg-white border-stone-200 text-stone-400']">體檢</button>
                 </div>
 
                 <div class="input-wrapper h-10">
