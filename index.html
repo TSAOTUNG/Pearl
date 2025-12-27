@@ -22,7 +22,8 @@
 
     <style>
         [v-cloak] { display: none !important; }
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #FFFDF5; color: #5D5D5D; -webkit-tap-highlight-color: transparent; }
+        /* 防止橫向捲軸溢出 */
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #FFFDF5; color: #5D5D5D; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
         .cream-card { background-color: #FFFFFF; border: 1px solid #F0E6D2; box-shadow: 0 4px 10px -2px rgba(230, 210, 181, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -32,33 +33,52 @@
         .avatar-img { object-position: 0% 25%; }
         .empty-avatar-img { object-position: 0% 25%; }
         
-        /* 輸入框容器 */
+        /* 輸入框容器 - 使用 Flexbox 垂直置中 */
         .input-wrapper {
-            display: flex; align-items: center; justify-content: center;
-            background-color: #FAF7F0; border: 1px solid #EBE0D0;
-            border-radius: 0.75rem; min-height: 3rem; position: relative; overflow: hidden;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            background-color: #FAF7F0; 
+            border: 1px solid #EBE0D0;
+            border-radius: 0.75rem; 
+            height: 3rem; 
+            position: relative; 
+            overflow: hidden;
+            width: 100%; /* 確保容器不超過父層 */
         }
+        
         .ios-input-hidden { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 10; cursor: pointer; }
         
-        /* iOS 輸入框修正：移除 padding-top，使用 Flexbox 對齊 */
+        /* iOS 輸入框修正 - 關鍵在於 min-width: 0 和移除 padding */
         .ios-input-fix {
-            background: transparent; border: none; width: 100%; height: 100%;
-            text-align: center; text-align-last: center; font-size: 16px;
-            appearance: none; -webkit-appearance: none; padding: 0; margin: 0;
-            font-family: 'Noto Sans TC', sans-serif; font-weight: 500; color: #5D5D5D;
-            display: flex; align-items: center; justify-content: center; /* 確保文字垂直置中 */
+            display: block;
+            background: transparent; 
+            border: none; 
+            width: 100%; 
+            height: 100%;
+            text-align: center; 
+            text-align-last: center; 
+            font-size: 16px; /* 防止 iOS 自動縮放 */
+            appearance: none; 
+            -webkit-appearance: none; 
+            border-radius: 0; 
+            padding: 0; 
+            margin: 0;
+            line-height: normal; 
+            font-family: 'Noto Sans TC', sans-serif; 
+            font-weight: 500; 
+            color: #5D5D5D;
         }
-        /* 針對 select 元素的特殊處理 */
-        select.ios-input-fix {
-            display: block; /* Select 需要 block 才能正常顯示選項 */
-            padding-top: 10px; /* 稍微調整 select 的文字位置 */
-        }
+        
+        select.ios-input-fix { padding-left: 5px; }
 
-        /* 針對只有底線的輸入框 (iOS 去除預設樣式) */
+        /* 針對只有底線的輸入框 */
         .underline-input {
             border-radius: 0;
             -webkit-appearance: none;
             appearance: none;
+            margin: 0; 
+            padding: 4px 0;
         }
 
         .custom-display-layer {
@@ -72,7 +92,6 @@
         .modal-enter-from .modal-content, .modal-leave-to .modal-content { transform: translateY(20px) scale(0.95); }
         .stat-card { background: linear-gradient(135deg, #ffffff 0%, #FFFDF5 100%); border: 1px solid #F0E6D2; }
         
-        /* 解決 iOS 滾動卡頓 */
         .scroll-touch { -webkit-overflow-scrolling: touch; }
     </style>
 </head>
@@ -179,9 +198,9 @@
                             
                             <div v-if="editForm.data.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-2">體檢項目與結果</label>
-                                <div v-for="(item, idx) in editForm.data.checkupItems" :key="idx" class="flex gap-2 mb-2">
-                                    <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
-                                    <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                <div v-for="(item, idx) in editForm.data.checkupItems" :key="idx" class="flex gap-2 mb-2 w-full">
+                                    <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                    <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
                                     <button @click="editForm.data.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                                 </div>
                                 <button @click="if(!editForm.data.checkupItems) editForm.data.checkupItems=[]; editForm.data.checkupItems.push({name:'', result:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增項目</button>
@@ -193,7 +212,7 @@
                             </div>
                             <div v-if="editForm.data.subType === 'medical'">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">開立藥物</label>
-                                <div class="input-wrapper"><input type="text" v-model="editForm.data.medication" class="ios-input-fix" placeholder="藥品名稱/天數"></div>
+                                <div class="input-wrapper"><input type="text" v-model="editForm.data.medication" class="ios-input-fix" placeholder=""></div>
                             </div>
 
                             <div class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
@@ -201,9 +220,9 @@
                                     <label class="block text-xs font-bold text-gray-400 uppercase">費用明細</label>
                                     <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(editForm.data.billingDetails) }}</span>
                                 </div>
-                                <div v-for="(bill, idx) in editForm.data.billingDetails" :key="idx" class="flex gap-2 mb-2">
-                                    <input type="text" v-model="bill.name" placeholder="項目" class="flex-[2] text-xs border-b border-gray-300 bg-transparent py-1 underline-input rounded-none">
-                                    <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                                <div v-for="(bill, idx) in editForm.data.billingDetails" :key="idx" class="flex gap-2 mb-2 w-full">
+                                    <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                    <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
                                     <button @click="editForm.data.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                                 </div>
                                 <button @click="if(!editForm.data.billingDetails) editForm.data.billingDetails=[]; editForm.data.billingDetails.push({name:'', amount:''})" class="w-full py-1 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
@@ -219,14 +238,12 @@
         </div>
     </transition>
 
-    <header class="relative bg-white shadow-sm pb-4 rounded-b-[2rem] overflow-hidden z-10" style="padding-top: env(safe-area-inset-top);">
-        <div class="h-52 w-full overflow-hidden relative bg-[#E6D2B5] absolute top-0 left-0 w-full" style="height: calc(13rem + env(safe-area-inset-top)); margin-top: calc(-1 * env(safe-area-inset-top));">
+    <header class="relative bg-white shadow-sm pb-4 rounded-b-[2rem] overflow-hidden z-10">
+        <div class="h-52 w-full overflow-hidden relative bg-[#E6D2B5]">
             <img src="./banner.jpg" onerror="this.style.display='none'" alt="小珍珠睡覺" class="w-full h-full object-cover banner-img opacity-95">
             <div class="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent"></div>
         </div>
-        <div class="h-40"></div>
-        
-        <div class="pl-10 pr-6 -mt-10 flex items-end relative z-20">
+        <div class="pl-10 pr-6 -mt-14 flex items-end relative z-20">
             <div class="w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-[#FFFDF5] flex-shrink-0">
                 <img src="./avatar.jpg" alt="小珍珠" class="w-full h-full object-cover avatar-img">
             </div>
@@ -473,8 +490,8 @@
                                 <button @click="deleteAllergy('suspected', idx)" class="ml-2 text-orange-300 hover:text-orange-500"><i class="fas fa-times"></i></button>
                             </span>
                         </div>
-                        <div class="flex gap-2">
-                            <input type="text" v-model="tempAllergyInput.suspected" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-300">
+                        <div class="flex gap-2 w-full">
+                            <input type="text" v-model="tempAllergyInput.suspected" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-orange-300 min-w-0">
                             <button @click="addAllergy('suspected')" class="bg-orange-400 text-white px-3 py-1 rounded-lg text-sm shadow-sm whitespace-nowrap shrink-0">新增</button>
                         </div>
                     </div>
@@ -487,14 +504,13 @@
                                 <button @click="deleteAllergy('confirmed', idx)" class="ml-2 text-red-300 hover:text-red-500"><i class="fas fa-times"></i></button>
                             </span>
                         </div>
-                        <div class="flex gap-2">
-                            <input type="text" v-model="tempAllergyInput.confirmed" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-red-300">
+                        <div class="flex gap-2 w-full">
+                            <input type="text" v-model="tempAllergyInput.confirmed" placeholder="輸入食物或成分" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-red-300 min-w-0">
                             <button @click="addAllergy('confirmed')" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm shadow-sm whitespace-nowrap shrink-0">新增</button>
                         </div>
                     </div>
 
                     <button @click="saveAllergies" class="w-full py-3 bg-[#E6D2B5] text-white rounded-xl shadow-md hover:bg-[#D4C0A1] transition font-bold mt-2">更新過敏原設定</button>
-                    <p class="text-[10px] text-gray-400 text-center mt-2">此設定會直接更新，不會產生流水帳紀錄</p>
                 </div>
 
                 <div v-else>
@@ -526,9 +542,9 @@
                         
                         <div v-if="form.health.subType === 'checkup'" class="bg-[#FAF7F0] p-3 rounded-xl border border-[#F0E6D2]">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2 text-center">體檢項目與結果</label>
-                            <div v-for="(item, idx) in form.health.checkupItems" :key="idx" class="flex gap-2 mb-2">
-                                <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
-                                <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                            <div v-for="(item, idx) in form.health.checkupItems" :key="idx" class="flex gap-2 mb-2 w-full">
+                                <input type="text" v-model="item.name" placeholder="項目" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                <input type="text" v-model="item.result" placeholder="結果" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
                                 <button @click="form.health.checkupItems.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                             </div>
                             <button @click="form.health.checkupItems.push({name:'', result:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增體檢項目</button>
@@ -536,7 +552,7 @@
 
                         <div v-if="form.health.subType === 'medical'">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">醫囑/診斷</label>
-                            <div class="input-wrapper" style="height: auto; min-height: 5rem;"><textarea v-model="form.health.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none"></textarea></div>
+                            <div class="input-wrapper" style="height: auto; min-height: 5rem;"><textarea v-model="form.health.orders" class="ios-input-fix h-16 pt-2 px-2 text-left resize-none" style="display:block;"></textarea></div>
                         </div>
                         <div v-if="form.health.subType === 'medical'">
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-1 text-center">開立藥物</label>
@@ -548,9 +564,9 @@
                                 <label class="block text-xs font-bold text-gray-400 uppercase">費用明細</label>
                                 <span class="text-xs font-bold text-[#8C7B66]">總計: ${{ calculateTotal(form.health.billingDetails) }}</span>
                             </div>
-                            <div v-for="(bill, idx) in form.health.billingDetails" :key="idx" class="flex gap-2 mb-2">
-                                <input type="text" v-model="bill.name" placeholder="項目" class="flex-[2] text-xs border-b border-gray-300 bg-transparent py-1 underline-input rounded-none">
-                                <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none">
+                            <div v-for="(bill, idx) in form.health.billingDetails" :key="idx" class="flex gap-2 mb-2 w-full">
+                                <input type="text" v-model="bill.name" placeholder="項目" class="flex-[1] text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
+                                <input type="number" v-model.number="bill.amount" placeholder="$" class="flex-1 text-xs border-b border-gray-300 bg-transparent py-1 text-center underline-input rounded-none min-w-0">
                                 <button @click="form.health.billingDetails.splice(idx, 1)" class="text-red-300 px-1 shrink-0"><i class="fas fa-minus-circle"></i></button>
                             </div>
                             <button @click="form.health.billingDetails.push({name:'', amount:''})" class="w-full py-2 text-xs text-[#A68A64] border border-dashed border-[#A68A64] rounded hover:bg-[#A68A64] hover:text-white transition">+ 新增費用</button>
